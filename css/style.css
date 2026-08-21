@@ -2243,6 +2243,8 @@ input[type="text"], input[type="number"] {
 .header-btn:hover { background: rgba(255,255,255,0.16); }
 .header-btn.primary { background: var(--primary-color); border-color: var(--primary-color); }
 .header-btn.primary:hover { background: var(--primary-hover); }
+.header-btn.success { background: var(--info-color); border-color: var(--info-color); }
+.header-btn.success:hover { background: #059669; }
 .header-btn.danger { background: var(--danger-color); border-color: var(--danger-color); }
 .header-btn.danger:hover { background: var(--danger-hover); }
 .header-btn.is-active {
