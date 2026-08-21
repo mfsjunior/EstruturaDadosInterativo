@@ -633,7 +633,6 @@ class AppManager {
         const showScenarios = this.isPresentationMode && (this.activeModuleId === 'LinkedList' || this.activeModuleId === 'BST' || this.activeModuleId === 'AVL' || this.activeModuleId === 'RedBlack' || this.activeModuleId === 'Trie' || this.activeModuleId === 'FenwickTree' || this.activeModuleId === 'UnionFind' || this.activeModuleId === 'Graph');
         if (expandedScenarioBar) {
             expandedScenarioBar.classList.toggle('hidden', !showScenarios);
-            if (!showScenarios) expandedScenarioBar.innerHTML = '';
         }
 
         if (expandBtn) {
