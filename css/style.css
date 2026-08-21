@@ -3081,3 +3081,29 @@ body.tutorial-active .app-header,
 body.tutorial-active .app-body {
     z-index: auto !important;
 }
+
+/* Seta animada apontando pro elemento */
+.tutorial-pointer-arrow {
+    position: fixed;
+    z-index: 10003;
+    font-size: 3rem;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: bounceTutorial 1s infinite alternate;
+}
+
+@keyframes bounceTutorial {
+    0% { transform: translateY(0) translateX(0); }
+    100% { transform: translateY(10px) translateX(10px); }
+}
+.tutorial-pointer-arrow.arrow-left { animation: bounceLeft 1s infinite alternate; }
+@keyframes bounceLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-15px); } }
+
+.tutorial-pointer-arrow.arrow-up { animation: bounceUp 1s infinite alternate; }
+@keyframes bounceUp { 0% { transform: translateY(0); } 100% { transform: translateY(-15px); } }
+
+.tutorial-pointer-arrow.arrow-down { animation: bounceDown 1s infinite alternate; }
+@keyframes bounceDown { 0% { transform: translateY(0); } 100% { transform: translateY(15px); } }
+
+.tutorial-pointer-arrow.arrow-right { animation: bounceRight 1s infinite alternate; }
+@keyframes bounceRight { 0% { transform: translateX(0); } 100% { transform: translateX(15px); } }

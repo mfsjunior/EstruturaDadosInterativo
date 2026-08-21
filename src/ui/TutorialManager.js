@@ -9,6 +9,11 @@ class TutorialManager {
         this.btnNext = document.getElementById('btnNextTutorial');
         this.btnSkip = document.getElementById('btnSkipTutorial');
         
+        // Cria a seta
+        this.pointerArrow = document.createElement('div');
+        this.pointerArrow.className = 'tutorial-pointer-arrow hidden';
+        document.body.appendChild(this.pointerArrow);
+        
         this.currentStep = 0;
         this.hiddenTargetRestores = [];
         
@@ -151,21 +156,41 @@ class TutorialManager {
             
             // Move o modal para perto do target
             const rect = targetEl.getBoundingClientRect();
+            this.pointerArrow.classList.remove('hidden', 'arrow-left', 'arrow-up', 'arrow-down', 'arrow-right');
             
             if (stepData.position === 'right') {
                 modal.style.top = (rect.top + rect.height/2) + 'px';
-                modal.style.left = (rect.right + 20) + 'px';
+                modal.style.left = (rect.right + 40) + 'px';
                 modal.style.transform = 'translate(0, -50%)';
+                
+                this.pointerArrow.innerHTML = '👈';
+                this.pointerArrow.classList.add('arrow-left');
+                this.pointerArrow.style.top = (rect.top + rect.height/2 - 25) + 'px';
+                this.pointerArrow.style.left = (rect.right - 10) + 'px';
+                
             } else if (stepData.position === 'bottom') {
-                modal.style.top = (rect.bottom + 20) + 'px';
+                modal.style.top = (rect.bottom + 40) + 'px';
                 modal.style.left = (rect.left + rect.width/2) + 'px';
                 modal.style.transform = 'translate(-50%, 0)';
+                
+                this.pointerArrow.innerHTML = '👆';
+                this.pointerArrow.classList.add('arrow-up');
+                this.pointerArrow.style.top = (rect.bottom - 10) + 'px';
+                this.pointerArrow.style.left = (rect.left + rect.width/2 - 25) + 'px';
+                
             } else if (stepData.position === 'top') {
-                modal.style.top = (rect.top - 20) + 'px';
+                modal.style.top = (rect.top - 40) + 'px';
                 modal.style.left = (rect.left + rect.width/2) + 'px';
                 modal.style.transform = 'translate(-50%, -100%)';
+                
+                this.pointerArrow.innerHTML = '👇';
+                this.pointerArrow.classList.add('arrow-down');
+                this.pointerArrow.style.top = (rect.top - 50) + 'px';
+                this.pointerArrow.style.left = (rect.left + rect.width/2 - 25) + 'px';
+                
             } else {
                 this.centerModal(modal);
+                this.pointerArrow.classList.add('hidden');
             }
             
             // Delay curto para deixar o CSS aplicar e então checar bounds
@@ -185,6 +210,7 @@ class TutorialManager {
         modal.style.top = '50%';
         modal.style.left = '50%';
         modal.style.transform = 'translate(-50%, -50%)';
+        if (this.pointerArrow) this.pointerArrow.classList.add('hidden');
     }
 
     nextStep() {
@@ -218,6 +244,7 @@ class TutorialManager {
         this.restoreHiddenElements();
         this.overlay.classList.add('hidden');
         this.modal.classList.add('hidden');
+        if (this.pointerArrow) this.pointerArrow.classList.add('hidden');
         document.body.style.overflow = '';
         document.body.classList.remove('tutorial-active');
         localStorage.setItem(this.tutorialKey, 'true');
