@@ -144,6 +144,12 @@ class TutorialManager {
 
         const targetEl = document.querySelector(stepData.target);
         
+        // Garante que a sidebar esteja aberta se o alvo estiver dentro dela
+        const sidebar = document.querySelector('.left-sidebar');
+        if (sidebar && targetEl && sidebar.contains(targetEl) && sidebar.classList.contains('collapsed')) {
+            sidebar.classList.remove('collapsed');
+        }
+        
         if (targetEl) {
             // Se estava oculto, mostra temporariamente
             if (targetEl.classList.contains('hidden')) {
