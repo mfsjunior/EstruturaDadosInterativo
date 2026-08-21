@@ -165,6 +165,8 @@ class DoublyLinkedList {
         let current = this.head;
         let index = 0;
         
+        this._addStep('INFO', { activeLine: 2 }, code, `Iniciando busca linear pelo valor ${value}...`);
+        
         if (current) {
             this._addStep('TRAVERSE', { target: current.id, activeLine: 3 }, code, `Iniciando iteracao no head.`);
         }
@@ -194,7 +196,9 @@ class DoublyLinkedList {
         
         let node = this.head;
         let count = 0;
-        this._addStep('TRAVERSE_START', { target: node ? node.id : null, activeLine: 2 }, code, `Iniciando busca do valor ${value}...`);
+        
+        this._addStep('INFO', { activeLine: 2 }, code, `Iniciando busca do valor ${value} para remocao...`);
+        this._addStep('TRAVERSE_START', { target: node ? node.id : null, activeLine: 2 }, code, `Posicionando o cursor no head.`);
 
         while (node !== null) {
             count++;

@@ -132,7 +132,7 @@ class LinkedListModule extends BaseModule {
         }
 
         const preserveScenario = Boolean(options.preserveScenario);
-        const autoPlay = false;
+        const autoPlay = options.autoPlay !== false;
         if (!preserveScenario) {
             this._clearScenarioQueue();
         }
