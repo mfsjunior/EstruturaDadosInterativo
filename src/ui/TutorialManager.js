@@ -50,7 +50,7 @@ class TutorialManager {
             },
             {
                 title: "Expandir Sala & Modo Professor 👨‍🏫",
-                content: "Use 'Expandir Sala' para tela cheia. O botão 'Visualizar Algoritmo' (Modo Professor) permite que você veja o código Java e o valor das variáveis em tempo real enquanto o algoritmo é executado!",
+                content: "Use 'Expandir Sala' para entrar em tela cheia. Aqui, botões com simulações prontas (Cenários) aparecerão logo acima do visualizador! O botão 'Visualizar Algoritmo' (Modo Professor) permite ver o código Java e as variáveis em tempo real enquanto o algoritmo é executado!",
                 target: '#btnVisualAlgorithm',
                 position: 'bottom'
             },

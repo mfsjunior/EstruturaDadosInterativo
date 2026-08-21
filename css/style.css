@@ -2241,6 +2241,8 @@ input[type="text"], input[type="number"] {
 .header-btn:hover { background: rgba(255,255,255,0.16); }
 .header-btn.primary { background: var(--primary-color); border-color: var(--primary-color); }
 .header-btn.primary:hover { background: var(--primary-hover); }
+.header-btn.danger { background: var(--danger-color); border-color: var(--danger-color); }
+.header-btn.danger:hover { background: var(--danger-hover); }
 .header-btn.is-active {
     background: rgba(16, 185, 129, 0.2);
     border-color: rgba(16, 185, 129, 0.65);
@@ -2526,7 +2528,7 @@ input[type="text"], input[type="number"] {
 }
 .info-icon { cursor: help; opacity: 0.7; }
 
-.expanded-scenarios {
+#expandedScenarioBar {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
@@ -2536,10 +2538,10 @@ input[type="text"], input[type="number"] {
     border-radius: 10px;
     background: rgba(15, 23, 42, 0.78);
 }
-.center-workspace:not(.expanded) .expanded-scenarios {
+.center-workspace:not(.expanded) #expandedScenarioBar {
     display: none;
 }
-.expanded-scenarios .scenario-btn {
+#expandedScenarioBar .scenario-btn {
     font-size: 0.95rem;
     padding: 0.7rem 1.1rem;
 }

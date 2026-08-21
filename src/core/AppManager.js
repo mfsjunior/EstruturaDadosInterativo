@@ -638,6 +638,7 @@ class AppManager {
 
         if (expandBtn) {
             expandBtn.textContent = this.isPresentationMode ? 'Fechar Sala' : 'Expandir Sala';
+            expandBtn.classList.toggle('danger', this.isPresentationMode);
         }
 
         if (exitBtn) {
