@@ -2,6 +2,7 @@ class TutorialManager {
     constructor() {
         this.tutorialKey = 'ed_tutorial_seen_v2';
         this.overlay = document.getElementById('tutorialOverlay');
+        this.modal = document.getElementById('tutorialModal');
         this.contentContainer = document.getElementById('tutorialContent');
         this.dotsContainer = document.getElementById('tutorialDots');
         this.btnPrev = document.getElementById('btnPrevTutorial');
@@ -9,6 +10,7 @@ class TutorialManager {
         this.btnSkip = document.getElementById('btnSkipTutorial');
         
         this.currentStep = 0;
+        this.hiddenTargetRestores = [];
         
         this.steps = [
             {
@@ -107,14 +109,21 @@ class TutorialManager {
         this.applyHighlight(stepData);
     }
 
+    restoreHiddenElements() {
+        this.hiddenTargetRestores.forEach(el => {
+            if (el) el.classList.add('hidden');
+        });
+        this.hiddenTargetRestores = [];
+    }
+
     applyHighlight(stepData) {
-        // Limpa destaque anterior
+        // Limpa destaque e estados anteriores
         if (this.currentTarget) {
             this.currentTarget.classList.remove('tutorial-highlight');
         }
+        this.restoreHiddenElements();
         
-        // Pega elemento do modal
-        const modal = this.overlay.querySelector('.tutorial-modal');
+        const modal = this.modal;
 
         if (!stepData.target) {
             this.currentTarget = null;
@@ -123,8 +132,14 @@ class TutorialManager {
         }
 
         const targetEl = document.querySelector(stepData.target);
-        // Se o elemento não existe ou está invisível (altura 0)
-        if (targetEl && targetEl.offsetHeight > 0) {
+        
+        if (targetEl) {
+            // Se estava oculto, mostra temporariamente
+            if (targetEl.classList.contains('hidden')) {
+                targetEl.classList.remove('hidden');
+                this.hiddenTargetRestores.push(targetEl);
+            }
+
             this.currentTarget = targetEl;
             this.currentTarget.classList.add('tutorial-highlight');
             
@@ -183,9 +198,9 @@ class TutorialManager {
     }
 
     openTutorial() {
-        this.overlay.classList.remove('hidden');
-        // Previne scroll do body
         document.body.style.overflow = 'hidden';
+        this.overlay.classList.remove('hidden');
+        this.modal.classList.remove('hidden');
     }
 
     closeTutorial() {
@@ -193,7 +208,9 @@ class TutorialManager {
             this.currentTarget.classList.remove('tutorial-highlight');
             this.currentTarget = null;
         }
+        this.restoreHiddenElements();
         this.overlay.classList.add('hidden');
+        this.modal.classList.add('hidden');
         document.body.style.overflow = '';
         localStorage.setItem(this.tutorialKey, 'true');
     }

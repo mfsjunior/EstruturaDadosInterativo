@@ -3048,7 +3048,7 @@ input[type="text"], input[type="number"] {
 .tutorial-highlight {
     position: relative !important;
     z-index: 10001 !important;
-    box-shadow: 0 0 0 4px var(--primary-color), 0 0 30px rgba(59,130,246,0.6) !important;
+    box-shadow: 0 0 0 6px var(--primary-color), 0 0 60px rgba(59,130,246,0.95) !important;
     background: var(--bg-panel);
     border-radius: 8px; /* Fallback caso não tenha border-radius */
     transition: all 0.3s ease;
@@ -3059,13 +3059,19 @@ input[type="text"], input[type="number"] {
     display: block; 
 }
 .tutorial-modal {
-    position: absolute;
+    position: fixed; /* fixo na tela toda, separado do overlay */
     /* By default center the modal */
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
     z-index: 10002; /* Mantém o modal acima do elemento destacado (10001) */
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.tutorial-overlay.hidden .tutorial-modal {
+.tutorial-modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
     transform: translate(-50%, -45%) scale(0.95);
 }

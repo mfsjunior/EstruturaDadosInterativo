@@ -729,18 +729,19 @@
     </div>
 
     <!-- Tutorial Overlay -->
-    <div id="tutorialOverlay" class="tutorial-overlay hidden">
-        <div class="tutorial-modal">
-            <button id="btnSkipTutorial" class="tutorial-skip" title="Pular tutorial">&times;</button>
-            <div class="tutorial-content" id="tutorialContent">
-                <!-- Conteúdo injetado via JS -->
-            </div>
-            <div class="tutorial-footer">
-                <div class="tutorial-dots" id="tutorialDots"></div>
-                <div class="tutorial-actions">
-                    <button id="btnPrevTutorial" class="action-btn secondary hidden">Anterior</button>
-                    <button id="btnNextTutorial" class="action-btn primary">Próximo</button>
-                </div>
+    <div id="tutorialOverlay" class="tutorial-overlay hidden"></div>
+    
+    <!-- Tutorial Modal (fora do overlay para controle de z-index independente) -->
+    <div id="tutorialModal" class="tutorial-modal hidden">
+        <button id="btnSkipTutorial" class="tutorial-skip" title="Pular tutorial">&times;</button>
+        <div class="tutorial-content" id="tutorialContent">
+            <!-- Conteúdo injetado via JS -->
+        </div>
+        <div class="tutorial-footer">
+            <div class="tutorial-dots" id="tutorialDots"></div>
+            <div class="tutorial-actions">
+                <button id="btnPrevTutorial" class="action-btn secondary hidden">Anterior</button>
+                <button id="btnNextTutorial" class="action-btn primary">Próximo</button>
             </div>
         </div>
     </div>
