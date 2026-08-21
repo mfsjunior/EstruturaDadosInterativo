@@ -3043,3 +3043,28 @@ input[type="text"], input[type="number"] {
     background: rgba(148, 163, 184, 0.1);
     color: var(--text-color);
 }
+
+/* Tutorial Spotlight classes */
+.tutorial-highlight {
+    position: relative !important;
+    z-index: 10001 !important;
+    box-shadow: 0 0 0 4px var(--primary-color), 0 0 30px rgba(59,130,246,0.6) !important;
+    background: var(--bg-panel);
+    border-radius: 8px; /* Fallback caso não tenha border-radius */
+    transition: all 0.3s ease;
+}
+
+.tutorial-overlay {
+    /* Update from fixed flex center to block, since we might move the modal manually */
+    display: block; 
+}
+.tutorial-modal {
+    position: absolute;
+    /* By default center the modal */
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+.tutorial-overlay.hidden .tutorial-modal {
+    transform: translate(-50%, -45%) scale(0.95);
+}

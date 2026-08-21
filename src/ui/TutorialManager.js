@@ -13,31 +13,45 @@ class TutorialManager {
         this.steps = [
             {
                 title: "Bem-vindo ao ED Lab! 🚀",
-                content: "Aqui você aprenderá estruturas de dados na prática. O layout é dividido em áreas lógicas para facilitar o seu estudo."
+                content: "Aqui você aprenderá estruturas de dados na prática. O layout é dividido em áreas lógicas para facilitar o seu estudo.",
+                target: null,
+                position: 'center'
             },
             {
                 title: "Escolha a Estrutura 🗂️",
-                content: "Use o menu superior esquerdo para trocar de estrutura (ex: Arrays, Listas Encadeadas, Árvores)."
+                content: "Use o menu superior esquerdo para trocar de estrutura (ex: Arrays, Listas Encadeadas, Árvores).",
+                target: '.sidebar-nav',
+                position: 'right'
             },
             {
                 title: "Faça Operações ⚙️",
-                content: "Com a estrutura selecionada, use o painel inferior esquerdo para inserir, remover ou buscar valores. As ações refletirão no centro da tela."
+                content: "Com a estrutura selecionada, use o painel inferior esquerdo para inserir, remover ou buscar valores. As ações refletirão no centro da tela.",
+                target: '#leftControlsHost',
+                position: 'right'
             },
             {
                 title: "Visualização na Memória 🧠",
-                content: "A área central exibe a estrutura de dados graficamente. Você verá os valores sendo manipulados, a alocação dos índices e os ponteiros ilustrando o comportamento exato de cada algoritmo!"
+                content: "A área central exibe a estrutura de dados graficamente. Você verá os valores sendo manipulados, a alocação dos índices e os ponteiros ilustrando o comportamento exato de cada algoritmo!",
+                target: '#mainStructureCard',
+                position: 'bottom'
             },
             {
                 title: "Controle a Animação ⏯️",
-                content: "Na barra superior, você pode pausar, avançar passo a passo ou alterar a velocidade da visualização de cada algoritmo."
+                content: "Na barra superior, você pode pausar, avançar passo a passo ou alterar a velocidade da visualização de cada algoritmo.",
+                target: '.header-center',
+                position: 'bottom'
             },
             {
                 title: "Modo Debug 🐞",
-                content: "Em operações complexas, clique na aba 'Debug' (centro-cima) para ver o código Java linha a linha sincronizado com a animação."
+                content: "Em operações complexas, clique na aba 'Debug' (centro-cima) para ver o código Java linha a linha sincronizado com a animação.",
+                target: '#algorithmDebugCard',
+                position: 'bottom'
             },
             {
                 title: "Tudo Pronto! 🎬",
-                content: "Use a barra inferior (Scenarios) para rodar simulações prontas. <br><br><i>Nota: Este tutorial não aparecerá novamente nas próximas visitas. Clique em 'Começar' para iniciar seus estudos!</i>"
+                content: "Use a barra inferior (Scenarios) para rodar simulações prontas. <br><br><i>Nota: Este tutorial não aparecerá novamente nas próximas visitas. Clique em 'Começar' para iniciar seus estudos!</i>",
+                target: '#expandedScenarioBar',
+                position: 'top'
             }
         ];
     }
@@ -89,6 +103,59 @@ class TutorialManager {
         } else {
             this.btnNext.textContent = 'Próximo';
         }
+        
+        this.applyHighlight(stepData);
+    }
+
+    applyHighlight(stepData) {
+        // Limpa destaque anterior
+        if (this.currentTarget) {
+            this.currentTarget.classList.remove('tutorial-highlight');
+        }
+        
+        // Pega elemento do modal
+        const modal = this.overlay.querySelector('.tutorial-modal');
+
+        if (!stepData.target) {
+            this.currentTarget = null;
+            // Centraliza o modal
+            modal.style.top = '50%';
+            modal.style.left = '50%';
+            modal.style.transform = 'translate(-50%, -50%)';
+            return;
+        }
+
+        const targetEl = document.querySelector(stepData.target);
+        if (targetEl) {
+            this.currentTarget = targetEl;
+            this.currentTarget.classList.add('tutorial-highlight');
+            
+            // Move o modal para perto do target
+            const rect = targetEl.getBoundingClientRect();
+            
+            if (stepData.position === 'right') {
+                modal.style.top = (rect.top + rect.height/2) + 'px';
+                modal.style.left = (rect.right + 20) + 'px';
+                modal.style.transform = 'translate(0, -50%)';
+            } else if (stepData.position === 'bottom') {
+                modal.style.top = (rect.bottom + 20) + 'px';
+                modal.style.left = (rect.left + rect.width/2) + 'px';
+                modal.style.transform = 'translate(-50%, 0)';
+            } else if (stepData.position === 'top') {
+                modal.style.top = (rect.top - 20) + 'px';
+                modal.style.left = (rect.left + rect.width/2) + 'px';
+                modal.style.transform = 'translate(-50%, -100%)';
+            } else {
+                modal.style.top = '50%';
+                modal.style.left = '50%';
+                modal.style.transform = 'translate(-50%, -50%)';
+            }
+        } else {
+            this.currentTarget = null;
+            modal.style.top = '50%';
+            modal.style.left = '50%';
+            modal.style.transform = 'translate(-50%, -50%)';
+        }
     }
 
     nextStep() {
@@ -114,6 +181,10 @@ class TutorialManager {
     }
 
     closeTutorial() {
+        if (this.currentTarget) {
+            this.currentTarget.classList.remove('tutorial-highlight');
+            this.currentTarget = null;
+        }
         this.overlay.classList.add('hidden');
         document.body.style.overflow = '';
         localStorage.setItem(this.tutorialKey, 'true');
