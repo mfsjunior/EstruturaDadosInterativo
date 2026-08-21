@@ -17,7 +17,7 @@
     --ptr-active: #f59e0b;
     --highlight: #eab308;
     --surface-color: rgba(30, 41, 59, 0.85); /* New surface color for cards */
-    --surface-color-light: rgba(40, 53, 75, 0.9); /* Lighter surface for central cards */
+    --surface-color-light: rgb(109 39 173 / 85%); /* Purple surface for central cards */
     --glass-blur: blur(12px);
     --transition-speed: 0.3s;
 }
@@ -2351,10 +2351,10 @@ input[type="text"], input[type="number"] {
     margin-top: 0;
 }
 .center-workspace {
-    padding: 1rem;
+    padding: 1rem 1rem 3rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     overflow-y: auto;
 }
 
@@ -2501,7 +2501,7 @@ input[type="text"], input[type="number"] {
     flex-shrink: 0;
     width: 100%;
     align-self: stretch;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 40px rgb(205 169 239 / 50%), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .viz-card .card-header {
     display: flex;
