@@ -728,6 +728,23 @@
         </div>
     </div>
 
+    <!-- Tutorial Overlay -->
+    <div id="tutorialOverlay" class="tutorial-overlay hidden">
+        <div class="tutorial-modal">
+            <button id="btnSkipTutorial" class="tutorial-skip" title="Pular tutorial">&times;</button>
+            <div class="tutorial-content" id="tutorialContent">
+                <!-- Conteúdo injetado via JS -->
+            </div>
+            <div class="tutorial-footer">
+                <div class="tutorial-dots" id="tutorialDots"></div>
+                <div class="tutorial-actions">
+                    <button id="btnPrevTutorial" class="action-btn secondary hidden">Anterior</button>
+                    <button id="btnNextTutorial" class="action-btn primary">Próximo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="src/model/Node.js?v=20260820-3"></script>
     <script src="src/model/DoublyLinkedList.js?v=20260820-3"></script>
     <script src="src/model/SequentialArray.js?v=20260820-3"></script>
@@ -797,6 +814,7 @@
     <script src="src/modules/FenwickModule.js?v=20260820-3"></script>
     <script src="src/modules/UnionFindModule.js?v=20260820-3"></script>
     <script src="src/modules/GraphModule.js?v=20260820-3"></script>
+    <script src="src/ui/TutorialManager.js?v=20260821"></script>
     <script src="src/core/AppManager.js?v=20260820-3"></script>
     <script src="src/app.js?v=20260820-3"></script>
 </body>

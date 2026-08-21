@@ -30,6 +30,12 @@ class AppManager {
         this._bindRightPanelMenu();
         this._bindLayoutRefresh();
         this._setupNoRightSidebarLayout();
+        
+        // Inicializa o tutorial
+        if (typeof TutorialManager !== 'undefined') {
+            this.tutorialManager = new TutorialManager();
+            this.tutorialManager.init();
+        }
     }
 
     _setupNoRightSidebarLayout() {
