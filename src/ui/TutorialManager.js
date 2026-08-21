@@ -44,7 +44,7 @@ class TutorialManager {
             },
             {
                 title: "Controle a Animação ⏯️",
-                content: "Aqui no menu superior direito você tem o controle total! <br><br><b>Atenção:</b> Os algoritmos pausam automaticamente para fins didáticos. Você deve clicar em <b>Passo</b> para avançar cada etapa, ou em <b>Play</b> para rodar direto.",
+                content: "Aqui no menu superior direito você tem o controle total!<br><br><b>Atenção:</b> Mesmo clicando em <b>Play</b>, os algoritmos podem pausar automaticamente em etapas cruciais para fins didáticos. Quando isso acontecer, clique em <b>Passo</b> para continuar avançando!",
                 target: '.header-right',
                 position: 'center'
             },
