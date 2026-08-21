@@ -125,7 +125,7 @@ class LinkedListModule extends BaseModule {
         if (!this.list || typeof this.list[methodName] !== 'function') return;
 
         const isDebugMode = this.appManager.activeViewTab === 'debug';
-        const supportsDebug = ['addFirst', 'addLast', 'removeFirst', 'removeLast', 'removeValue', 'get', 'insert', 'clear'].includes(methodName);
+        const supportsDebug = ['addFirst', 'addLast', 'removeFirst', 'removeLast', 'removeValue', 'get', 'insert', 'clear', 'indexOf'].includes(methodName);
         if (isDebugMode && supportsDebug) {
             this._executeOperationInDebugMode(methodName, value, options);
             return;

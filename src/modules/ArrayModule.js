@@ -148,7 +148,7 @@ class ArrayModule extends BaseModule {
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true) {
         const isDebugMode = this.appManager.activeViewTab === 'debug';
-        const supportsDebug = methodName === 'get' || methodName === 'add' || methodName === 'addLast' || methodName === 'remove';
+        const supportsDebug = methodName === 'get' || methodName === 'add' || methodName === 'addLast' || methodName === 'remove' || methodName === 'indexOf';
         if (isDebugMode && supportsDebug) {
             this._executeOperationInDebugMode(methodName, args, silent);
             return;
