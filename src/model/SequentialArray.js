@@ -84,6 +84,8 @@ class SequentialArray {
         this._startOperation(`indexOf(${value})`);
         const code = `public int indexOf(Object o) {\n    for (int i = 0; i < size; i++) {\n        if (o.equals(array[i])) return i;\n    }\n    return -1;\n}`;
 
+        this._addStep('INFO', { activeLine: 2 }, code, `Iniciando busca linear pelo valor ${value}...`);
+
         for (let i = 0; i < this.size; i++) {
             const calculatedAddress = this.baseAddress + (i * this.elementSize);
             const currentValue = this.data[i];

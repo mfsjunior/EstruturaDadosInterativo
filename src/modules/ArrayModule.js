@@ -154,7 +154,6 @@ class ArrayModule extends BaseModule {
             return;
         }
 
-        autoPlay = false;
         if (this.animationController.isPlaying) {
             this.animationController.fastForward();
         }
