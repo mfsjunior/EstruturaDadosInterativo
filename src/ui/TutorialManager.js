@@ -196,8 +196,30 @@ class TutorialManager {
             // Delay curto para deixar o CSS aplicar e então checar bounds
             setTimeout(() => {
                 const mRect = modal.getBoundingClientRect();
-                if (mRect.bottom > window.innerHeight || mRect.right > window.innerWidth || mRect.top < 0 || mRect.left < 0) {
-                    this.centerModal(modal);
+                let newTop = parseFloat(modal.style.top);
+                let newLeft = parseFloat(modal.style.left);
+                let changed = false;
+
+                if (mRect.bottom > window.innerHeight) {
+                    newTop -= (mRect.bottom - window.innerHeight + 20);
+                    changed = true;
+                }
+                if (mRect.top < 0) {
+                    newTop += (-mRect.top + 20);
+                    changed = true;
+                }
+                if (mRect.right > window.innerWidth) {
+                    newLeft -= (mRect.right - window.innerWidth + 20);
+                    changed = true;
+                }
+                if (mRect.left < 0) {
+                    newLeft += (-mRect.left + 20);
+                    changed = true;
+                }
+
+                if (changed) {
+                    modal.style.top = newTop + 'px';
+                    modal.style.left = newLeft + 'px';
                 }
             }, 50);
         } else {
