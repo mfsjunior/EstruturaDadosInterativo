@@ -37,6 +37,12 @@ class TutorialManager {
                 position: 'right'
             },
             {
+                title: "Cenários Prontos 🎬",
+                content: "Logo abaixo das operações, temos os Cenários (ex: 'Build 3 Nós', 'Buscar Meio'). Eles carregam simulações prontas instantaneamente para você ver a estrutura funcionando rápido!",
+                target: '.scenarios-bar',
+                position: 'right'
+            },
+            {
                 title: "Visualização na Memória 🧠",
                 content: "A área central exibe a estrutura de dados graficamente. Você verá os valores sendo manipulados, a alocação dos índices e os ponteiros ilustrando o comportamento exato de cada algoritmo!",
                 target: '#mainStructureCard',

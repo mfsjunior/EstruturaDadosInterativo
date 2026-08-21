@@ -2132,9 +2132,9 @@ input[type="text"], input[type="number"] {
     display: flex; gap: 0.5rem; flex-wrap: wrap;
 }
 .scenario-btn {
-    background: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
     padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
@@ -2534,9 +2534,10 @@ input[type="text"], input[type="number"] {
     flex-wrap: wrap;
     align-items: center;
     padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
-    background: rgba(15, 23, 42, 0.78);
+    background: rgba(30, 41, 59, 0.85); /* Lighter blue/gray panel */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 .center-workspace:not(.expanded) #expandedScenarioBar {
     display: none;
