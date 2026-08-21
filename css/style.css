@@ -3027,3 +3027,13 @@ input[type="text"], input[type="number"] {
     display: flex;
     gap: 10px;
 }
+
+.action-btn.secondary {
+    background: transparent;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: var(--text-color);
+}
+.action-btn.secondary:hover {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--text-color);
+}
