@@ -3064,6 +3064,7 @@ input[type="text"], input[type="number"] {
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
+    z-index: 10002; /* Mantém o modal acima do elemento destacado (10001) */
 }
 .tutorial-overlay.hidden .tutorial-modal {
     transform: translate(-50%, -45%) scale(0.95);
