@@ -38,20 +38,20 @@ class TutorialManager {
             {
                 title: "Controle a Animação ⏯️",
                 content: "Na barra superior, você pode pausar, avançar passo a passo ou alterar a velocidade da visualização de cada algoritmo.",
-                target: '.header-center',
+                target: '.header-right',
                 position: 'bottom'
             },
             {
                 title: "Modo Debug 🐞",
                 content: "Em operações complexas, clique na aba 'Debug' (centro-cima) para ver o código Java linha a linha sincronizado com a animação.",
                 target: '#algorithmDebugCard',
-                position: 'bottom'
+                position: 'center'
             },
             {
                 title: "Tudo Pronto! 🎬",
                 content: "Use a barra inferior (Scenarios) para rodar simulações prontas. <br><br><i>Nota: Este tutorial não aparecerá novamente nas próximas visitas. Clique em 'Começar' para iniciar seus estudos!</i>",
-                target: '#expandedScenarioBar',
-                position: 'top'
+                target: '.app-body',
+                position: 'center'
             }
         ];
     }
@@ -118,15 +118,13 @@ class TutorialManager {
 
         if (!stepData.target) {
             this.currentTarget = null;
-            // Centraliza o modal
-            modal.style.top = '50%';
-            modal.style.left = '50%';
-            modal.style.transform = 'translate(-50%, -50%)';
+            this.centerModal(modal);
             return;
         }
 
         const targetEl = document.querySelector(stepData.target);
-        if (targetEl) {
+        // Se o elemento não existe ou está invisível (altura 0)
+        if (targetEl && targetEl.offsetHeight > 0) {
             this.currentTarget = targetEl;
             this.currentTarget.classList.add('tutorial-highlight');
             
@@ -146,16 +144,26 @@ class TutorialManager {
                 modal.style.left = (rect.left + rect.width/2) + 'px';
                 modal.style.transform = 'translate(-50%, -100%)';
             } else {
-                modal.style.top = '50%';
-                modal.style.left = '50%';
-                modal.style.transform = 'translate(-50%, -50%)';
+                this.centerModal(modal);
             }
+            
+            // Delay curto para deixar o CSS aplicar e então checar bounds
+            setTimeout(() => {
+                const mRect = modal.getBoundingClientRect();
+                if (mRect.bottom > window.innerHeight || mRect.right > window.innerWidth || mRect.top < 0 || mRect.left < 0) {
+                    this.centerModal(modal);
+                }
+            }, 50);
         } else {
             this.currentTarget = null;
-            modal.style.top = '50%';
-            modal.style.left = '50%';
-            modal.style.transform = 'translate(-50%, -50%)';
+            this.centerModal(modal);
         }
+    }
+
+    centerModal(modal) {
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
     }
 
     nextStep() {
