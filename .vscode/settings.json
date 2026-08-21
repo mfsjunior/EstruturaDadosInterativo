@@ -1,0 +1,12 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd /c/projetos/EstruturaDeDados/ED\\\\ Interativo ; python -m http\\.server 8000$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^node -v; npm -v; echo '---'; cd \"c:/projetos/EstruturaDeDados/ED Interativo\"; ls$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
