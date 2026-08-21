@@ -13,11 +13,19 @@ class TutorialManager {
         this.steps = [
             {
                 title: "Bem-vindo ao ED Lab! 🚀",
-                content: "Aqui você aprenderá estruturas de dados na prática, visualizando o que acontece na memória do computador a cada operação."
+                content: "Aqui você aprenderá estruturas de dados na prática. O layout é dividido em áreas lógicas para facilitar o seu estudo."
             },
             {
                 title: "Escolha a Estrutura 🗂️",
-                content: "Use o menu à esquerda para alternar entre diferentes estruturas, como Arrays, Listas, Pilhas e Árvores."
+                content: "Use o menu superior esquerdo para trocar de estrutura (ex: Arrays, Listas Encadeadas, Árvores)."
+            },
+            {
+                title: "Faça Operações ⚙️",
+                content: "Com a estrutura selecionada, use o painel inferior esquerdo para inserir, remover ou buscar valores. As ações refletirão no centro da tela."
+            },
+            {
+                title: "Visões Lógicas e de Memória 🧠",
+                content: "O painel principal possui abas (Lógica, Memória). Nota: A visão de Memória foca em nós e ponteiros. Para estruturas contíguas como Arrays, a memória não é exibida graficamente em blocos separados."
             },
             {
                 title: "Controle a Animação ⏯️",
@@ -25,11 +33,11 @@ class TutorialManager {
             },
             {
                 title: "Modo Debug 🐞",
-                content: "Em operações complexas, clique na aba 'Debug' para ver o código Java linha a linha, junto com o mapa visual."
+                content: "Em operações complexas, clique na aba 'Debug' (centro-cima) para ver o código Java linha a linha sincronizado com a animação."
             },
             {
                 title: "Cenários Prontos 🎬",
-                content: "Use a área inferior (Scenarios) para iniciar simulações pré-configuradas e focar direto na lógica principal."
+                content: "Use a barra na parte inferior da tela para rodar simulações rápidas prontas e focar na lógica principal!"
             }
         ];
     }
