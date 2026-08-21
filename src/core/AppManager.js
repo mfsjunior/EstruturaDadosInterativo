@@ -71,7 +71,7 @@ class AppManager {
         this.registerModule('FenwickTree', new FenwickModule(this));
         this.registerModule('UnionFind', new UnionFindModule(this));
         this.registerModule('Graph', new GraphModule(this));
-        this.loadModule('Array');
+        this.loadModule('LinkedList');
     }
 
     registerModule(id, moduleInstance) {
