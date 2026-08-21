@@ -147,7 +147,10 @@ class TutorialManager {
         // Garante que a sidebar esteja aberta se o alvo estiver dentro dela
         const sidebar = document.querySelector('.left-sidebar');
         if (sidebar && targetEl && sidebar.contains(targetEl) && sidebar.classList.contains('collapsed')) {
+            sidebar.style.transition = 'none'; // Desativa animacao temporariamente
             sidebar.classList.remove('collapsed');
+            sidebar.offsetHeight; // Forca reflow
+            sidebar.style.transition = ''; // Restaura animacao
         }
         
         if (targetEl) {
