@@ -24,8 +24,8 @@ class TutorialManager {
                 content: "Com a estrutura selecionada, use o painel inferior esquerdo para inserir, remover ou buscar valores. As ações refletirão no centro da tela."
             },
             {
-                title: "Visões Lógicas e de Memória 🧠",
-                content: "O painel principal possui abas (Lógica, Memória). Nota: A visão de Memória foca em nós e ponteiros. Para estruturas contíguas como Arrays, a memória não é exibida graficamente em blocos separados."
+                title: "Visualização na Memória 🧠",
+                content: "A área central exibe a estrutura de dados graficamente. Você verá os valores sendo manipulados, a alocação dos índices e os ponteiros ilustrando o comportamento exato de cada algoritmo!"
             },
             {
                 title: "Controle a Animação ⏯️",
