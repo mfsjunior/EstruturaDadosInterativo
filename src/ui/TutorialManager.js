@@ -154,6 +154,9 @@ class TutorialManager {
         }
         
         if (targetEl) {
+            // Rola o elemento para ficar visivel na tela antes de calcular coordenadas!
+            targetEl.scrollIntoView({ block: 'center' });
+            
             // Se estava oculto, mostra temporariamente
             if (targetEl.classList.contains('hidden')) {
                 targetEl.classList.remove('hidden');
