@@ -210,7 +210,7 @@ class TimelinePanel {
                 const cloud = this._cloudFor(step).replace(/"/g, '&quot;');
                 const title = cloud ? `${detail} | Nuvem: ${cloud}` : detail;
                 return `
-                    <div class="timeline-step ${state}" data-index="${index}" title="${title}">
+                    <div class="timeline-step ${state}" data-index="${index}">
                         <div class="timeline-circle">${badge}</div>
                         <div class="timeline-step-label">${label}</div>
                         ${cloud ? `<div class="timeline-cloud">${cloud}</div>` : ''}
