@@ -2539,8 +2539,13 @@ input[type="text"], input[type="number"] {
     background: rgba(30, 41, 59, 0.85); /* Lighter blue/gray panel */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
-.center-workspace:not(.expanded) #expandedScenarioBar {
+.center-workspace:not(.expanded) #expandedScenarioBar:not(.tutorial-force-show) {
     display: none;
+}
+#expandedScenarioBar.tutorial-force-show {
+    position: relative !important;
+    z-index: 10001 !important;
+    box-shadow: 0 0 0 6px var(--primary-color), 0 0 60px rgba(59,130,246,0.95) !important;
 }
 #expandedScenarioBar .scenario-btn {
     font-size: 0.95rem;

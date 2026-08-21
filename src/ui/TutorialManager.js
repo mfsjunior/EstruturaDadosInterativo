@@ -56,8 +56,14 @@ class TutorialManager {
             },
             {
                 title: "Expandir Sala & Modo Professor 👨‍🏫",
-                content: "Use 'Expandir Sala' para entrar em tela cheia. Aqui, botões com simulações prontas (Cenários) aparecerão logo acima do visualizador! O botão 'Visualizar Algoritmo' (Modo Professor) permite ver o código Java e as variáveis em tempo real enquanto o algoritmo é executado!",
+                content: "Use 'Expandir Sala' para entrar em tela cheia. O botão 'Visualizar Algoritmo' (Modo Professor) permite ver o código Java e as variáveis em tempo real enquanto o algoritmo é executado!",
                 target: '#btnVisualAlgorithm',
+                position: 'bottom'
+            },
+            {
+                title: "Cenários Expandidos 🎬",
+                content: "No modo Expandir Sala, estes botões com simulações prontas aparecem aqui em cima, logo acima do visualizador! Eles são ótimos para ver a estrutura funcionando rápido e em tela cheia.",
+                target: '#expandedScenarioBar',
                 position: 'bottom'
             },
             {
@@ -127,10 +133,14 @@ class TutorialManager {
     }
 
     restoreHiddenElements() {
-        this.hiddenTargetRestores.forEach(el => {
-            if (el) el.classList.add('hidden');
-        });
-        this.hiddenTargetRestores = [];
+        while (this.hiddenTargetRestores.length > 0) {
+            const el = this.hiddenTargetRestores.pop();
+            if (el.id === 'expandedScenarioBar') {
+                el.classList.remove('tutorial-force-show');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
     }
 
     applyHighlight(stepData) {
@@ -166,6 +176,11 @@ class TutorialManager {
             // Se estava oculto, mostra temporariamente
             if (targetEl.classList.contains('hidden')) {
                 targetEl.classList.remove('hidden');
+                this.hiddenTargetRestores.push(targetEl);
+            }
+            // Força a exibição de elementos especiais (como o expandedScenarioBar)
+            if (stepData.target === '#expandedScenarioBar') {
+                targetEl.classList.add('tutorial-force-show');
                 this.hiddenTargetRestores.push(targetEl);
             }
 
