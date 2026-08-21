@@ -158,6 +158,36 @@ class DoublyLinkedList {
         return node.value;
     }
 
+    indexOf(value) {
+        this._startOperation(`indexOf(${value})`);
+        const code = `public int indexOf(Object o) {\n    int index = 0;\n    for (Node<T> x = head; x != null; x = x.next) {\n        if (o.equals(x.item)) return index;\n        index++;\n    }\n    return -1;\n}`;
+        
+        let current = this.head;
+        let index = 0;
+        
+        if (current) {
+            this._addStep('TRAVERSE', { target: current.id, activeLine: 3 }, code, `Iniciando iteracao no head.`);
+        }
+        
+        while (current != null) {
+            this._addStep('INFO', { target: current.id, activeLine: 4 }, code, `Comparando valor do no atual (${current.value}) com ${value}...`);
+            if (String(current.value) === String(value)) {
+                this._addStep('INFO', { target: current.id, activeLine: 4 }, code, `Valor ${value} encontrado no indice ${index}! Busca O(n) finalizada.`);
+                return index;
+            }
+            if (current.next) {
+                this._addStep('TRAVERSE', { source: current.id, target: current.next.id, activeLine: 5 }, code, `Nao encontrou. Avancando x = x.next.`);
+            } else {
+                this._addStep('INFO', { target: current.id, activeLine: 5 }, code, `Chegou ao fim da lista.`);
+            }
+            current = current.next;
+            index++;
+        }
+        
+        this._addStep('INFO', { activeLine: 7 }, code, `Busca concluida. Valor ${value} nao encontrado na lista. Retornando -1.`);
+        return -1;
+    }
+
     removeValue(value) {
         this._startOperation('removeValue', value);
         const code = `public boolean removeValue(T value) {\n    Node<T> node = head;\n    while (node != null) {\n        if (node.value.equals(value)) {\n            unlink(node);\n            return true;\n        }\n        node = node.next;\n    }\n    return false;\n}`;

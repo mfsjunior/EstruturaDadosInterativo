@@ -12,6 +12,12 @@ class LinkedListOperationPanel {
         document.getElementById('btnAddLast').addEventListener('click', () => this._handleAddLast());
         document.getElementById('btnRemoveFirst').addEventListener('click', () => this._handleRemoveFirst());
         document.getElementById('btnRemoveValue').addEventListener('click', () => this._handleRemoveValue());
+        
+        const btnSearchValue = document.getElementById('btnSearchValue');
+        if (btnSearchValue) {
+            btnSearchValue.addEventListener('click', () => this._handleSearchValue());
+        }
+
         document.getElementById('btnGet').addEventListener('click', () => this._handleGet());
         document.getElementById('btnClear').addEventListener('click', () => this._handleClear());
         document.getElementById('btnReset').addEventListener('click', () => this._handleReset());
@@ -71,10 +77,25 @@ class LinkedListOperationPanel {
     }
 
     _handleRemoveValue() {
-        const val = this.inputRemoveValue.value;
-        if (!val) return;
+        const val = this.inputRemoveValue.value.trim();
+        if (val === '') {
+            alert('Por favor, informe um valor.');
+            return;
+        }
         this.app.executeOperation('removeValue', val);
         this.inputRemoveValue.value = '';
+    }
+
+    _handleSearchValue() {
+        const inputSearchValue = document.getElementById('inputSearchValue');
+        if (!inputSearchValue) return;
+        const val = inputSearchValue.value.trim();
+        if (val === '') {
+            alert('Por favor, informe um valor para buscar.');
+            return;
+        }
+        this.app.executeOperation('indexOf', val);
+        inputSearchValue.value = '';
     }
 
     _handleGet() {

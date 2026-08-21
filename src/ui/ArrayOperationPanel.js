@@ -13,6 +13,12 @@ class ArrayOperationPanel {
         document.getElementById('btnArrayAddLast').addEventListener('click', () => this._handleAddLast());
         document.getElementById('btnArrayRemove').addEventListener('click', () => this._handleRemove());
         document.getElementById('btnArrayGet').addEventListener('click', () => this._handleGet());
+        
+        const btnSearch = document.getElementById('btnArraySearchValue');
+        if (btnSearch) {
+            btnSearch.addEventListener('click', () => this._handleSearchValue());
+        }
+
         document.getElementById('btnArrayClear').addEventListener('click', () => this._handleClear());
     }
 
@@ -46,6 +52,18 @@ class ArrayOperationPanel {
         if (isNaN(idx)) return;
         this.module.executeOperation('get', [idx]);
         this.inputGetIndex.value = '';
+    }
+
+    _handleSearchValue() {
+        const inputSearchValue = document.getElementById('arraySearchValue');
+        if (!inputSearchValue) return;
+        const val = inputSearchValue.value.trim();
+        if (val === '') {
+            this.module.appManager.getGlobals().consolePanel.log('Informe um valor para buscar.', 'system');
+            return;
+        }
+        this.module.executeOperation('indexOf', [val]);
+        inputSearchValue.value = '';
     }
 
     _handleClear() {

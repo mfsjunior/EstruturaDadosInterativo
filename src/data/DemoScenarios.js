@@ -1,4 +1,18 @@
 window.DemoScenarios = {
+	array: [
+		{
+			id: 'array-search',
+			label: 'Preencher e Buscar',
+			operations: [
+				{ method: 'addLast', args: [15] },
+				{ method: 'addLast', args: [22] },
+				{ method: 'addLast', args: [47] },
+				{ method: 'addLast', args: [9] },
+				{ method: 'indexOf', args: [47] },
+			],
+			description: 'Insere elementos aleatorios e faz a busca pelo numero 47.'
+		}
+	],
 	linkedList: [
 		{
 			id: 'build-chain',
@@ -27,6 +41,17 @@ window.DemoScenarios = {
 				{ method: 'addLast', args: ['19'] },
 				{ method: 'addLast', args: ['27'] },
 				{ method: 'removeValue', args: ['19'] },
+			],
+		},
+		{
+			id: 'linkedlist-search',
+			label: 'Preencher e Buscar',
+			operations: [
+				{ method: 'addLast', args: ['12'] },
+				{ method: 'addLast', args: ['44'] },
+				{ method: 'addLast', args: ['89'] },
+				{ method: 'addLast', args: ['2'] },
+				{ method: 'indexOf', args: ['89'] },
 			],
 		},
 	],

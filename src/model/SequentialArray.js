@@ -80,6 +80,45 @@ class SequentialArray {
         return value;
     }
 
+    indexOf(value) {
+        this._startOperation(`indexOf(${value})`);
+        const code = `public int indexOf(Object o) {\n    for (int i = 0; i < size; i++) {\n        if (o.equals(array[i])) return i;\n    }\n    return -1;\n}`;
+
+        for (let i = 0; i < this.size; i++) {
+            const calculatedAddress = this.baseAddress + (i * this.elementSize);
+            const currentValue = this.data[i];
+            
+            this._addStep('ARRAY_DIRECT_ACCESS', { // Usar DIRECT_ACCESS adaptado ou um step novo
+                index: i,
+                address: calculatedAddress,
+                value: currentValue,
+                activeLine: 2,
+                debugVars: { i, size: this.size, target: value, current: currentValue },
+            }, code, `Acessando indice ${i} (0x${calculatedAddress.toString(16).toUpperCase()}) para comparar valor.`);
+
+            this._addStep('INFO', {
+                index: i,
+                activeLine: 3,
+                debugVars: { i, target: value, current: currentValue, match: String(currentValue) === String(value) },
+            }, code, `Comparando array[${i}] (${currentValue}) com ${value}...`);
+
+            if (String(currentValue) === String(value)) {
+                this._addStep('INFO', {
+                    index: i,
+                    activeLine: 3,
+                    debugVars: { foundIndex: i },
+                }, code, `Valor ${value} encontrado no indice ${i}! Retornando ${i}. Busca Sequencial finalizada (O(n)).`);
+                return i;
+            }
+        }
+
+        this._addStep('INFO', {
+            activeLine: 5,
+            debugVars: { size: this.size },
+        }, code, `Busca concluida. Valor ${value} nao encontrado. Retornando -1.`);
+        return -1;
+    }
+
     addLast(value) {
         this.add(this.size, value);
     }
