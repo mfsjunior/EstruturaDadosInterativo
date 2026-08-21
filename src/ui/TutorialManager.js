@@ -156,6 +156,14 @@ class TutorialManager {
             
             // Move o modal para perto do target
             const rect = targetEl.getBoundingClientRect();
+            
+            // Se o elemento estiver invisivel na tela (ex: Expandir Sala ativado, display:none)
+            if (rect.width === 0 && rect.height === 0) {
+                this.currentTarget = null;
+                this.centerModal(modal);
+                return;
+            }
+            
             this.pointerArrow.classList.remove('hidden', 'arrow-left', 'arrow-up', 'arrow-down', 'arrow-right');
             
             if (stepData.position === 'right') {
