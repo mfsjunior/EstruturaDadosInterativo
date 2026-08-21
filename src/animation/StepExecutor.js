@@ -199,7 +199,14 @@ class StepExecutor {
         const action = document.getElementById('currentStepAction');
         if (action && !isFast) {
             const explicitAction = this._actionTextForStep(step);
-            const baseText = explicitAction || this.codeHighlighter.lastActiveLineText || (step.description || '').replace(/<[^>]+>/g, '');
+            let baseText = explicitAction;
+            if (!baseText) {
+                if (step.type === 'INFO' && step.description) {
+                    baseText = step.description.replace(/<[^>]+>/g, '');
+                } else {
+                    baseText = this.codeHighlighter.lastActiveLineText || (step.description || '').replace(/<[^>]+>/g, '');
+                }
+            }
             const cloudNote = typeof step.data?.cloud === 'string' && step.data.cloud.trim()
                 ? ` Nuvem: ${step.data.cloud.trim()}`
                 : '';

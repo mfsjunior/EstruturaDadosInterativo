@@ -76,7 +76,7 @@ class TimelinePanel {
 
     _labelMap() {
         return {
-            INFO: 'Resumo',
+            
             ERROR: 'Erro',
             CREATE_NODE: 'Criar no',
             SET_NEXT: 'Definir next',
