@@ -205,6 +205,7 @@ class TutorialManager {
 
     openTutorial() {
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('tutorial-active');
         this.overlay.classList.remove('hidden');
         this.modal.classList.remove('hidden');
     }
@@ -218,6 +219,7 @@ class TutorialManager {
         this.overlay.classList.add('hidden');
         this.modal.classList.add('hidden');
         document.body.style.overflow = '';
+        document.body.classList.remove('tutorial-active');
         localStorage.setItem(this.tutorialKey, 'true');
     }
 }

@@ -3075,3 +3075,9 @@ input[type="text"], input[type="number"] {
     visibility: hidden;
     transform: translate(-50%, -45%) scale(0.95);
 }
+
+/* Remove stacking contexts que prendem o highlight */
+body.tutorial-active .app-header,
+body.tutorial-active .app-body {
+    z-index: auto !important;
+}
