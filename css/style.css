@@ -17,7 +17,7 @@
     --ptr-active: #f59e0b;
     --highlight: #eab308;
     --surface-color: rgba(30, 41, 59, 0.85); /* New surface color for cards */
-    --surface-color-light: rgb(109 39 173 / 85%); /* Purple surface for central cards */
+    --surface-color-light: rgba(40, 53, 75, 0.9); /* Lighter surface for central cards */
     --glass-blur: blur(12px);
     --transition-speed: 0.3s;
 }
@@ -2501,7 +2501,7 @@ input[type="text"], input[type="number"] {
     flex-shrink: 0;
     width: 100%;
     align-self: stretch;
-    box-shadow: 0 20px 40px rgb(205 169 239 / 50%), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 .viz-card .card-header {
     display: flex;
@@ -2961,14 +2961,14 @@ input[type="text"], input[type="number"] {
 }
 
 .tutorial-modal {
-    background: var(--surface-color);
+    background: rgb(109 39 173 / 85%);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     width: 90%;
     max-width: 500px;
     padding: 30px;
     position: relative;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: 0 20px 40px rgb(205 169 239 / 50%), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     gap: 20px;
