@@ -39,7 +39,7 @@ class TutorialManager {
             },
             {
                 title: "Controle a Animação ⏯️",
-                content: "Neste menu superior direito você tem o controle total! Pause, avance passo a passo, resete ou altere a velocidade de execução.",
+                content: "Aqui no menu superior direito você tem o controle total! <br><br><b>Atenção:</b> Os algoritmos pausam automaticamente para fins didáticos. Você deve clicar em <b>Passo</b> para avançar cada etapa, ou em <b>Play</b> para rodar direto.",
                 target: '.header-right',
                 position: 'center'
             },
