@@ -3082,11 +3082,15 @@ body.tutorial-active .app-body,
 body.tutorial-active .left-sidebar,
 body.tutorial-active .right-sidebar,
 body.tutorial-active .center-workspace,
-body.tutorial-active .sidebar-card,
 body.tutorial-active .app-layout {
     z-index: auto !important;
     overflow: visible !important;
     transform: none !important;
+}
+
+body.tutorial-active .tutorial-highlight {
+    position: relative !important;
+    z-index: 10001 !important;
 }
 
 /* Seta animada apontando pro elemento */
