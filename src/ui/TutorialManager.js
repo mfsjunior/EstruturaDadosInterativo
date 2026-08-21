@@ -1,6 +1,6 @@
 class TutorialManager {
     constructor() {
-        this.tutorialKey = 'ed_tutorial_seen';
+        this.tutorialKey = 'ed_tutorial_seen_v2';
         this.overlay = document.getElementById('tutorialOverlay');
         this.contentContainer = document.getElementById('tutorialContent');
         this.dotsContainer = document.getElementById('tutorialDots');
@@ -36,8 +36,8 @@ class TutorialManager {
                 content: "Em operações complexas, clique na aba 'Debug' (centro-cima) para ver o código Java linha a linha sincronizado com a animação."
             },
             {
-                title: "Cenários Prontos 🎬",
-                content: "Use a barra na parte inferior da tela para rodar simulações rápidas prontas e focar na lógica principal!"
+                title: "Tudo Pronto! 🎬",
+                content: "Use a barra inferior (Scenarios) para rodar simulações prontas. <br><br><i>Nota: Este tutorial não aparecerá novamente nas próximas visitas. Clique em 'Começar' para iniciar seus estudos!</i>"
             }
         ];
     }
