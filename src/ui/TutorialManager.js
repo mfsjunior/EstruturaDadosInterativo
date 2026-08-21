@@ -27,7 +27,7 @@ class TutorialManager {
             },
             {
                 title: "Faça Operações ⚙️",
-                content: "Com a estrutura selecionada, use o painel inferior esquerdo para inserir, remover ou buscar valores. As ações refletirão no centro da tela.",
+                content: "Com a estrutura selecionada, use este painel (abaixo do menu) para inserir, remover ou buscar valores. As ações refletirão no centro da tela.",
                 target: '#leftControlsHost',
                 position: 'right'
             },
@@ -35,19 +35,25 @@ class TutorialManager {
                 title: "Visualização na Memória 🧠",
                 content: "A área central exibe a estrutura de dados graficamente. Você verá os valores sendo manipulados, a alocação dos índices e os ponteiros ilustrando o comportamento exato de cada algoritmo!",
                 target: '#mainStructureCard',
-                position: 'bottom'
+                position: 'center'
             },
             {
                 title: "Controle a Animação ⏯️",
-                content: "Na barra superior, você pode pausar, avançar passo a passo ou alterar a velocidade da visualização de cada algoritmo.",
+                content: "Neste menu superior direito você tem o controle total! Pause, avance passo a passo, resete ou altere a velocidade de execução.",
                 target: '.header-right',
+                position: 'center'
+            },
+            {
+                title: "Expandir Sala & Modo Professor 👨‍🏫",
+                content: "Use 'Expandir Sala' para tela cheia. O botão 'Visualizar Algoritmo' (Modo Professor) permite que você veja o código Java e o valor das variáveis em tempo real enquanto o algoritmo é executado!",
+                target: '#btnVisualAlgorithm',
                 position: 'bottom'
             },
             {
-                title: "Modo Debug 🐞",
-                content: "Em operações complexas, clique na aba 'Debug' (centro-cima) para ver o código Java linha a linha sincronizado com a animação.",
-                target: '#algorithmDebugCard',
-                position: 'center'
+                title: "Aba Debug 🐞",
+                content: "Você também pode alternar a visualização central clicando na aba 'DEBUG' aqui em cima. Isso mostrará o código sendo executado sincronizado com a animação.",
+                target: '#viewTabs',
+                position: 'bottom'
             },
             {
                 title: "Tudo Pronto! 🎬",
