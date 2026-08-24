@@ -88,9 +88,12 @@
             <main class="center-workspace">
                 <div id="expandedScenarioBar" class="expanded-scenarios hidden" aria-label="CenÃ¡rios rÃ¡pidos"></div>
                 <div id="mainStructureCard" class="viz-card">
-                    <div class="card-header">
-                        <h3 id="mainStructureTitle">MAPA DE MEM&Oacute;RIA <span class="info-icon" title="Endere&ccedil;os ilustrativos &mdash; representam refer&ecirc;ncias entre objetos.">&#8505;</span></h3>
-                        <div class="card-header-actions">
+                    <div class="card-header" style="flex-wrap: nowrap;">
+                        <h3 id="mainStructureTitle" style="white-space: nowrap;">MAPA DE MEM&Oacute;RIA <span class="info-icon" title="Endere&ccedil;os ilustrativos &mdash; representam refer&ecirc;ncias entre objetos.">&#8505;</span></h3>
+                        
+                        <div id="timelineActionText" style="flex: 1; margin: 0 1.5rem; color: #93c5fd; font-size: 0.95rem; font-weight: 500; background: rgba(59, 130, 246, 0.15); padding: 0.4rem 1rem; border-radius: 6px; border: 1px solid rgba(59,130,246,0.3); display: flex; align-items: center; justify-content: center; text-align: center; min-height: 2.2rem;">Aguardando opera&ccedil;&atilde;o...</div>
+
+                        <div class="card-header-actions" style="white-space: nowrap;">
                             <div id="mainStructureLegend" class="legend">Endere&ccedil;os ilustrativos &mdash; representam refer&ecirc;ncias entre objetos.</div>
                         </div>
                     </div>
@@ -127,9 +130,8 @@
                 </div>
 
                 <div class="viz-card timeline-card">
-                    <div class="card-header" style="display: block;">
-                        <h3 style="margin-bottom: 0.5rem;">TIMELINE / PASSOS DA OPERA&Ccedil;&Atilde;O</h3>
-                        <div id="timelineActionText" style="color: #93c5fd; font-size: 0.9rem; font-weight: 500; background: rgba(59, 130, 246, 0.15); padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid rgba(59,130,246,0.3); width: 100%; min-height: 2.2rem; display: flex; align-items: center;">Aguardando opera&ccedil;&atilde;o...</div>
+                    <div class="card-header">
+                        <h3>TIMELINE / PASSOS DA OPERA&Ccedil;&Atilde;O</h3>
                     </div>
                     <div id="timelineTrack" class="timeline-track"></div>
                 </div>
