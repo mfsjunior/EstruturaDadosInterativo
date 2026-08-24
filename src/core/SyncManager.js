@@ -10,6 +10,44 @@ class SyncManager {
         this.roomId = null;
         
         this.onStatusChange = null; // Callback for UI updates
+        this._initHostCursor();
+        this._initMouseTracking();
+    }
+    
+    _initHostCursor() {
+        if (!document.getElementById('hostCursor')) {
+            const cursor = document.createElement('div');
+            cursor.id = 'hostCursor';
+            cursor.style.position = 'fixed';
+            cursor.style.width = '20px';
+            cursor.style.height = '20px';
+            cursor.style.backgroundImage = 'radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0.2) 60%, transparent 100%)';
+            cursor.style.borderRadius = '50%';
+            cursor.style.pointerEvents = 'none';
+            cursor.style.zIndex = '999999';
+            cursor.style.transition = 'transform 0.1s linear';
+            cursor.style.transform = 'translate(-50%, -50%)';
+            cursor.style.display = 'none';
+            document.body.appendChild(cursor);
+        }
+    }
+    
+    _initMouseTracking() {
+        if (this._mouseListenerAdded) return;
+        this._mouseListenerAdded = true;
+        
+        let lastMove = 0;
+        document.addEventListener('mousemove', (e) => {
+            if (!this.isHost) return;
+            const now = Date.now();
+            if (now - lastMove < 50) return; // throttle to 20fps
+            lastMove = now;
+            
+            this.broadcastAction('SYNC_MOUSE', {
+                x: e.clientX / window.innerWidth,
+                y: e.clientY / window.innerHeight
+            });
+        });
     }
 
     _updateStatus(status) {
@@ -179,6 +217,18 @@ class SyncManager {
                 if (sb) {
                     sb.classList.toggle('collapsed', payload.isCollapsed);
                     if (this.appManager._refreshActiveTreeLayout) requestAnimationFrame(() => this.appManager._refreshActiveTreeLayout());
+                }
+                break;
+            case 'SYNC_MOUSE':
+                const cursor = document.getElementById('hostCursor');
+                if (cursor && this.isClient) {
+                    cursor.style.display = 'block';
+                    cursor.style.left = `${payload.x * window.innerWidth}px`;
+                    cursor.style.top = `${payload.y * window.innerHeight}px`;
+                    
+                    // hide cursor if inactive for 2s
+                    clearTimeout(this._cursorTimeout);
+                    this._cursorTimeout = setTimeout(() => { cursor.style.display = 'none'; }, 2000);
                 }
                 break;
             case 'EXECUTE_OPERATION':
