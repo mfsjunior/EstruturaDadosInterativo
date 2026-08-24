@@ -216,6 +216,12 @@ class StepExecutor {
             const timelineAction = document.getElementById('timelineActionText');
             if (timelineAction) {
                 timelineAction.textContent = baseText;
+                
+                if (step.data?.isSuccess || baseText.match(/encontrado no (indice|índice)/i)) {
+                    timelineAction.classList.add('highlight-success');
+                } else {
+                    timelineAction.classList.remove('highlight-success');
+                }
             }
         }
 

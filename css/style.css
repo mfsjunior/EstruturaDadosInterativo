@@ -2544,6 +2544,19 @@ input[type="text"], input[type="number"] {
     background: rgba(30, 41, 59, 0.85); /* Lighter blue/gray panel */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+#timelineActionText {
+    transition: all 0.3s ease;
+}
+
+#timelineActionText.highlight-success {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: rgba(16, 185, 129, 0.6) !important;
+    color: #34d399 !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    transform: scale(1.02);
+}
+
 .center-workspace:not(.expanded) #expandedScenarioBar:not(.tutorial-force-show) {
     display: none;
 }
