@@ -37,10 +37,12 @@ class ArrayRenderer {
             
             const isStackMode = this.container?.classList?.contains('stack-mode');
             if (isStackMode) {
-                // In stack mode, completely remove the index element to save space
-                idxLabel.style.display = 'none';
+                // Keep the element so ::after (TOP badge) works, but remove the numeric text
+                idxLabel.textContent = '';
+                idxLabel.style.display = '';
             } else {
                 idxLabel.textContent = i;
+                idxLabel.style.display = '';
             }
 
             const relationLabel = document.createElement('div');
