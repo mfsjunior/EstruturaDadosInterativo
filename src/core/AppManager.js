@@ -76,7 +76,11 @@ class AppManager {
         this.registerModule('FenwickTree', new FenwickModule(this));
         this.registerModule('UnionFind', new UnionFindModule(this));
         this.registerModule('Graph', new GraphModule(this));
-        this.loadModule('LinkedList');
+        
+        // Restore last active module from localStorage (survives F5)
+        const saved = localStorage.getItem('ed-activeModule');
+        const startModule = (saved && this.modules[saved]) ? saved : 'LinkedList';
+        this.loadModule(startModule);
     }
 
     registerModule(id, moduleInstance) {
@@ -132,6 +136,9 @@ class AppManager {
 
         this.activeModuleId = id;
         this.activeModule = nextModule;
+        
+        // Persist so F5 restores the same module
+        try { localStorage.setItem('ed-activeModule', id); } catch(_) {}
 
         const moduleNames = {
             LinkedList: 'LinkedList (Dupla)',
