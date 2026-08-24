@@ -210,7 +210,13 @@ class StepExecutor {
             const cloudNote = typeof step.data?.cloud === 'string' && step.data.cloud.trim()
                 ? ` Nuvem: ${step.data.cloud.trim()}`
                 : '';
-            action.textContent = `${baseText}${cloudNote}`.trim();
+            const fullText = `${baseText}${cloudNote}`.trim();
+            action.textContent = fullText;
+            
+            const timelineAction = document.getElementById('timelineActionText');
+            if (timelineAction) {
+                timelineAction.textContent = fullText;
+            }
         }
 
         if (!isFast) {
