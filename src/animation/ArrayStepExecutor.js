@@ -233,12 +233,26 @@ class ArrayStepExecutor {
         }
 
         const action = document.getElementById('currentStepAction');
-        if (action && !isFast) {
+        const timelineAction = document.getElementById('timelineActionText');
+        
+        if (!isFast) {
             const baseText = this.codeHighlighter.lastActiveLineText || (step.description || '').replace(/<[^>]+>/g, '');
-            const cloudNote = typeof step.data?.cloud === 'string' && step.data.cloud.trim()
-                ? ` Nuvem: ${step.data.cloud.trim()}`
-                : '';
-            action.textContent = `${baseText}${cloudNote}`.trim();
+            
+            if (action) {
+                const cloudNote = typeof step.data?.cloud === 'string' && step.data.cloud.trim()
+                    ? ` Nuvem: ${step.data.cloud.trim()}`
+                    : '';
+                action.textContent = `${baseText}${cloudNote}`.trim();
+            }
+            
+            if (timelineAction) {
+                timelineAction.textContent = baseText;
+                if (step.data?.isSuccess || String(baseText).match(/(encontrado no (indice|índice)|peek no topo|pop removeu)/i)) {
+                    timelineAction.classList.add('highlight-success');
+                } else {
+                    timelineAction.classList.remove('highlight-success');
+                }
+            }
         }
 
         if (this._isFenwickStep(step)) {
