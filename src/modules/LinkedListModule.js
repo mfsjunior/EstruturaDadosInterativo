@@ -280,7 +280,7 @@ class LinkedListModule extends BaseModule {
             args: Array.isArray(operation.args) ? [...operation.args] : [],
         }));
         this.isScenarioRunning = true;
-        this.scenarioManualMode = true;
+        this.scenarioManualMode = false;
         this._runNextScenarioOperation();
     }
 
