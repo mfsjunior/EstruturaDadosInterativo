@@ -283,7 +283,7 @@ class ArrayStepExecutor {
                 this.consolePanel.log('ERRO: ' + step.description);
                 break;
             case 'ARRAY_DIRECT_ACCESS':
-                this.arrayRenderer.highlight(step.data.index, 'highlight-blue');
+                this.arrayRenderer.highlight(step.data.index, step.data.isSuccess ? 'highlight-warning' : 'highlight-blue');
                 this.complexityPanel.show('O(1)', 'Acesso direto por \u00edndice \u2014 tempo constante.');
                 break;
             case 'ARRAY_INSERT':

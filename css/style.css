@@ -1863,6 +1863,9 @@ input[type="text"], input[type="number"] {
 .highlight-blue { animation: highlightBlue 1.5s ease-out !important; }
 @keyframes highlightBlue { 0% { border-color: var(--info-color); transform: translateY(-10px); } 100% { border-color: var(--primary-color); transform: translateY(0); } }
 
+.highlight-warning { animation: highlightWarning 1.5s ease-out !important; }
+@keyframes highlightWarning { 0% { border-color: var(--warning-color); transform: translateY(-10px); box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); } 100% { border-color: var(--primary-color); transform: translateY(0); box-shadow: none; } }
+
 #nodesContainer .array-cell-container.is-probe-origin .array-index {
     color: #86efac;
 }

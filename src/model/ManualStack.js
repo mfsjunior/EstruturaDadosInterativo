@@ -74,7 +74,7 @@ class ManualStack {
 
         const index = this.size - 1;
         const value = this.data[index];
-        this._addStep('ARRAY_DIRECT_ACCESS', { index }, code, `Lendo topo atual no indice ${index}.`);
+        this._addStep('ARRAY_DIRECT_ACCESS', { index, isSuccess: true }, code, `Lendo topo atual no indice ${index}.`);
 
         this.data[index] = undefined;
         this.size--;
@@ -94,7 +94,7 @@ class ManualStack {
 
         const index = this.size - 1;
         const value = this.data[index];
-        this._addStep('ARRAY_DIRECT_ACCESS', { index }, code, `Peek no topo (indice ${index}) retornou ${value}.`);
+        this._addStep('ARRAY_DIRECT_ACCESS', { index, isSuccess: true }, code, `Peek no topo (indice ${index}) retornou ${value}.`);
         this._addStep('UPDATE_STATE', { head: '-', tail: this._topLabel(), size: this.size }, code, `Topo permanece em ${this._topLabel()}.`);
         return value;
     }
