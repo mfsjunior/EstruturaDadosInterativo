@@ -18,7 +18,7 @@ class StackModule extends BaseModule {
         const globals = this.appManager.getGlobals();
 
         this.arrayRenderer = new ArrayRenderer('nodesContainer');
-        this.arrayRenderer.init(8, 0x2000, 4);
+        // Add mode class BEFORE init so renderArray detects it and hides index labels
         if (this.arrayRenderer.container) {
             this.arrayRenderer.container.classList.add('stack-mode');
             this.arrayRenderer.container.classList.remove('queue-mode', 'array-mode');
@@ -28,6 +28,7 @@ class StackModule extends BaseModule {
                 vizCard.classList.remove('queue-viz-card');
             }
         }
+        this.arrayRenderer.init(8, 0x2000, 4);
 
         this.stepExecutor = new ArrayStepExecutor(
             this.arrayRenderer,
