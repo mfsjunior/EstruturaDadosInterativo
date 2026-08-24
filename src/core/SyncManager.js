@@ -19,15 +19,33 @@ class SyncManager {
             const cursor = document.createElement('div');
             cursor.id = 'hostCursor';
             cursor.style.position = 'fixed';
-            cursor.style.width = '20px';
-            cursor.style.height = '20px';
-            cursor.style.backgroundImage = 'radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0.2) 60%, transparent 100%)';
+            cursor.style.width = '16px';
+            cursor.style.height = '16px';
+            cursor.style.backgroundColor = '#ef4444';
+            cursor.style.border = '2px solid white';
+            cursor.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.9)';
             cursor.style.borderRadius = '50%';
             cursor.style.pointerEvents = 'none';
-            cursor.style.zIndex = '999999';
-            cursor.style.transition = 'transform 0.1s linear';
+            cursor.style.zIndex = '9999999';
+            cursor.style.transition = 'top 0.05s linear, left 0.05s linear';
             cursor.style.transform = 'translate(-50%, -50%)';
             cursor.style.display = 'none';
+            
+            // Add a label
+            const label = document.createElement('div');
+            label.textContent = 'Professor';
+            label.style.position = 'absolute';
+            label.style.top = '100%';
+            label.style.left = '100%';
+            label.style.backgroundColor = '#ef4444';
+            label.style.color = 'white';
+            label.style.fontSize = '10px';
+            label.style.padding = '2px 6px';
+            label.style.borderRadius = '4px';
+            label.style.marginTop = '4px';
+            label.style.fontWeight = 'bold';
+            cursor.appendChild(label);
+            
             document.body.appendChild(cursor);
         }
     }
@@ -40,13 +58,24 @@ class SyncManager {
         document.addEventListener('mousemove', (e) => {
             if (!this.isHost) return;
             const now = Date.now();
-            if (now - lastMove < 50) return; // throttle to 20fps
+            if (now - lastMove < 40) return; // ~25fps
             lastMove = now;
             
             this.broadcastAction('SYNC_MOUSE', {
                 x: e.clientX / window.innerWidth,
                 y: e.clientY / window.innerHeight
             });
+        });
+
+        document.addEventListener('input', (e) => {
+            if (!this.isHost) return;
+            const target = e.target;
+            if (target.id && (target.tagName === 'INPUT' || target.tagName === 'SELECT')) {
+                this.broadcastAction('SYNC_INPUT', {
+                    id: target.id,
+                    value: target.value
+                });
+            }
         });
     }
 
@@ -226,9 +255,14 @@ class SyncManager {
                     cursor.style.left = `${payload.x * window.innerWidth}px`;
                     cursor.style.top = `${payload.y * window.innerHeight}px`;
                     
-                    // hide cursor if inactive for 2s
                     clearTimeout(this._cursorTimeout);
                     this._cursorTimeout = setTimeout(() => { cursor.style.display = 'none'; }, 2000);
+                }
+                break;
+            case 'SYNC_INPUT':
+                if (this.isClient && payload.id) {
+                    const input = document.getElementById(payload.id);
+                    if (input) input.value = payload.value;
                 }
                 break;
             case 'EXECUTE_OPERATION':
