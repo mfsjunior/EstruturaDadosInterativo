@@ -12,6 +12,11 @@ class SyncManager {
         this.onStatusChange = null; // Callback for UI updates
         this._initHostCursor();
         this._initMouseTracking();
+        
+        // Clean up connection gracefully on page reload/close to free up the Room ID
+        window.addEventListener('beforeunload', () => {
+            this.leaveRoom();
+        });
     }
     
     _initHostCursor() {
@@ -127,7 +132,13 @@ class SyncManager {
         });
 
         this.peer.on('error', (err) => {
-            this._updateStatus(`Erro: ${err.type}`);
+            console.error('PeerJS Error:', err);
+            if (err.type === 'unavailable-id') {
+                this._updateStatus(`Erro: ID da sala ja esta em uso. Aguarde 1 minuto ou use outro nome.`);
+                this.appManager.getGlobals().consolePanel.log(`A sala '${roomId}' ainda esta bloqueada no servidor (talvez por um F5 recente). Tente outro nome ou aguarde um pouco.`, 'error');
+            } else {
+                this._updateStatus(`Erro: ${err.type}`);
+            }
         });
     }
 
