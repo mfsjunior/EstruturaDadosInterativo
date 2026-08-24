@@ -182,6 +182,9 @@ class AppManager {
         if (nodesContainer) nodesContainer.innerHTML = '';
         if (arrowsCanvas) arrowsCanvas.innerHTML = '';
         if (memoryArrowsCanvas) memoryArrowsCanvas.innerHTML = '';
+        
+        const expandedScenarioBar = document.getElementById('expandedScenarioBar');
+        if (expandedScenarioBar) expandedScenarioBar.innerHTML = '';
 
         this.codeHighlighter.clear();
         this.consolePanel.clear();
@@ -706,12 +709,6 @@ class AppManager {
         if (appBody) appBody.classList.toggle('presentation-mode', this.isPresentationMode);
         if (centerWorkspace) centerWorkspace.classList.toggle('expanded', this.isPresentationMode);
 
-        if (expandedScenarioBar) {
-            const hasScenarios = expandedScenarioBar.querySelectorAll('.scenario-btn').length > 0;
-            const showScenarios = this.isPresentationMode && hasScenarios;
-            expandedScenarioBar.classList.toggle('hidden', !showScenarios);
-        }
-
         if (expandBtn) {
             expandBtn.textContent = this.isPresentationMode ? 'Fechar Sala' : 'Expandir Sala';
             expandBtn.classList.toggle('danger', this.isPresentationMode);
@@ -727,8 +724,13 @@ class AppManager {
 
         this._syncProjectorProfileUi();
 
-        if (showScenarios && this.activeModule && this.activeModule.operationPanel && typeof this.activeModule.operationPanel._renderScenarioButtons === 'function') {
+        if (this.isPresentationMode && this.activeModule && this.activeModule.operationPanel && typeof this.activeModule.operationPanel._renderScenarioButtons === 'function') {
             this.activeModule.operationPanel._renderScenarioButtons();
+        }
+
+        if (expandedScenarioBar) {
+            const hasScenarios = expandedScenarioBar.querySelectorAll('.scenario-btn').length > 0;
+            expandedScenarioBar.classList.toggle('hidden', !(this.isPresentationMode && hasScenarios));
         }
 
         this._refreshActiveTreeLayout();
