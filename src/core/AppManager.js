@@ -80,6 +80,39 @@ class AppManager {
     }
 
     registerModule(id, moduleInstance) {
+        // Intercept executeOperation to broadcast automatically
+        if (typeof moduleInstance.executeOperation === 'function') {
+            const originalExecute = moduleInstance.executeOperation.bind(moduleInstance);
+            moduleInstance.executeOperation = (methodName, args = [], silent = false, autoPlay = true, fromNetwork = false) => {
+                if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
+                    this.syncManager.broadcastAction('EXECUTE_OPERATION', { methodName, args, autoPlay });
+                }
+                return originalExecute(methodName, args, silent, autoPlay, fromNetwork);
+            };
+        }
+
+        // Intercept runScenario
+        if (typeof moduleInstance.runScenario === 'function') {
+            const originalRun = moduleInstance.runScenario.bind(moduleInstance);
+            moduleInstance.runScenario = (scenarioId, fromNetwork = false) => {
+                if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
+                    this.syncManager.broadcastAction('RUN_SCENARIO', { scenarioId });
+                }
+                return originalRun(scenarioId, fromNetwork);
+            };
+        }
+
+        // Intercept resetSystem
+        if (typeof moduleInstance.resetSystem === 'function') {
+            const originalReset = moduleInstance.resetSystem.bind(moduleInstance);
+            moduleInstance.resetSystem = (fromNetwork = false) => {
+                if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
+                    this.syncManager.broadcastAction('ANIM_RESTART');
+                }
+                return originalReset(fromNetwork);
+            };
+        }
+
         this.modules[id] = moduleInstance;
     }
 

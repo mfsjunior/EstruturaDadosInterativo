@@ -82,9 +82,7 @@ class StackModule extends BaseModule {
         if (speedSelect && this._handleSpeedSelect) speedSelect.removeEventListener('change', this._handleSpeedSelect);
     }
 
-    executeOperation(methodName, args = [], silent = false, autoPlay = true, fromNetwork = false) {
-        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('EXECUTE_OPERATION', { methodName, args, autoPlay });
-
+    executeOperation(methodName, args = [], silent = false, autoPlay = true) {
         if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
             this.animationController.fastForward();
         }
@@ -213,9 +211,7 @@ class StackModule extends BaseModule {
         };
     }
 
-    runScenario(scenarioId, fromNetwork = false) {
-        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('RUN_SCENARIO', { scenarioId });
-
+    runScenario(scenarioId) {
         const scenarios = window.DemoScenarios && Array.isArray(window.DemoScenarios.stack)
             ? window.DemoScenarios.stack
             : [];
@@ -233,7 +229,6 @@ class StackModule extends BaseModule {
     }
 
     resetSystem() {
-        this._clearScenarioQueue();
         this.animationController.pause();
         this.animationController.setResetHandler(null);
         this.animationController.setSteps([]);
