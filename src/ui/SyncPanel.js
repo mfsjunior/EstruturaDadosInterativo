@@ -27,8 +27,8 @@ class SyncPanel {
                     <input type="text" id="syncRoomId" placeholder="ID da Sala (ex: AULA1)" />
                 </div>
                 <div class="sync-actions">
-                    <button id="btnHostRoom" class="action-btn success">Hospedar (Prof)</button>
-                    <button id="btnJoinRoom" class="action-btn">Entrar (Aluno)</button>
+                    <button id="btnHostRoom" class="action-btn primary">Hospedar (Prof)</button>
+                    <button id="btnJoinRoom" class="action-btn info">Entrar (Aluno)</button>
                 </div>
                 <div class="sync-status" id="syncStatusText">Desconectado</div>
                 <button id="btnLeaveRoom" class="action-btn danger hidden">Sair / Desconectar</button>
