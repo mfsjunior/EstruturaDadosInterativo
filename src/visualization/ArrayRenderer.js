@@ -183,6 +183,6 @@ class ArrayRenderer {
         element.classList.remove(animClass);
         void element.offsetWidth; // trigger reflow
         element.classList.add(animClass);
-        setTimeout(() => element.classList.remove(animClass), 1000);
+        setTimeout(() => element.classList.remove(animClass), 2500);
     }
 }
