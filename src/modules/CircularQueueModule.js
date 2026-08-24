@@ -38,6 +38,44 @@ class CircularQueueModule extends BaseModule {
         );
         this.animationController = new AnimationController(this.stepExecutor);
 
+        this.debugEngine = new AlgorithmExecutionEngine({
+            onApply: (event, isFast) => {
+                const step = event.rawStep;
+                if (!step) return;
+                step.__algorithmEvent = event;
+                if (isFast) this.stepExecutor.executeFast(step);
+                else this.stepExecutor.execute(step);
+
+                const globalsInner = this.appManager.getGlobals();
+                if (globalsInner.algorithmDebugPanel) {
+                    const index = Number.isInteger(event.variables?.index)
+                        ? event.variables.index
+                        : (Number.isInteger(event.variables?.to) ? event.variables.to : null);
+                    globalsInner.algorithmDebugPanel.renderEvent(event, {
+                        structureType: 'queue',
+                        arrayState: event.afterState || event.variables?.arrayState || null,
+                        focusIndex: index,
+                        metrics: {
+                            visitedNodes: 0,
+                            queueOps: 0,
+                            comparisons: 0,
+                        },
+                    });
+                }
+            },
+            onReset: () => {
+                this.stepExecutor.restoreSnapshot(this.debugBaseline || this._captureSnapshot());
+            },
+            onProgress: (currentIndex, total, lastEvent) => {
+                const counter = document.getElementById('stepCounter');
+                if (counter) counter.textContent = `${currentIndex}/${total}`;
+                const globalsInner = this.appManager.getGlobals();
+                if (globalsInner.algorithmDebugPanel) {
+                    globalsInner.algorithmDebugPanel.onProgress(currentIndex, total, lastEvent);
+                }
+            },
+        });
+
         this.queue = new CircularQueue(8);
         this.operationPanel = new CircularQueueOperationPanel(this);
 
@@ -57,6 +95,10 @@ class CircularQueueModule extends BaseModule {
         if (this.animationController) {
             this.animationController.pause();
             this.animationController = null;
+        }
+        if (this.debugEngine) {
+            this.debugEngine.pause();
+            this.debugEngine = null;
         }
         if (this.arrayRenderer?.container) {
             this.arrayRenderer.container.classList.remove('queue-mode');
@@ -126,6 +168,11 @@ class CircularQueueModule extends BaseModule {
                 this._primePausedOperation(methodName);
             }
             if (playBtn) playBtn.textContent = String.fromCodePoint(0x25B6);
+        }
+
+        if (this.debugEngine) {
+            this.debugBaseline = baseline;
+            this.debugEngine.loadSteps(steps);
         }
     }
 
@@ -257,6 +304,7 @@ class CircularQueueModule extends BaseModule {
 
     resetSystem() {
         this.animationController.pause();
+        if (this.debugEngine) this.debugEngine.pause();
         this.animationController.setResetHandler(null);
         this.animationController.setSteps([]);
         this.queue = new CircularQueue(8);

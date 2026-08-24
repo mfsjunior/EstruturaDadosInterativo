@@ -34,16 +34,7 @@ class ArrayRenderer {
 
             const idxLabel = document.createElement('div');
             idxLabel.className = 'array-index';
-            
-            const isStackMode = this.container?.classList?.contains('stack-mode');
-            if (isStackMode) {
-                // Keep the element so ::after (TOP badge) works, but remove the numeric text
-                idxLabel.textContent = '';
-                idxLabel.style.display = '';
-            } else {
-                idxLabel.textContent = i;
-                idxLabel.style.display = '';
-            }
+            idxLabel.textContent = i;
 
             const relationLabel = document.createElement('div');
             relationLabel.className = 'array-relation';
