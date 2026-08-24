@@ -138,7 +138,14 @@ class AnimationController {
             return;
         }
 
-        const delay = Math.max(220, 900 / this.speed);
+        const baseDelay = Math.max(220, 900 / this.speed);
+        let delay = baseDelay;
+        
+        const desc = step.description || '';
+        if (step.data?.isSuccess || desc.match(/(encontrado|peek no topo|pop removeu)/i)) {
+            delay += (1500 / this.speed);
+        }
+
         this.timer = setTimeout(() => this._scheduleNext(), delay);
     }
 
