@@ -183,6 +183,12 @@ class AppManager {
         const activeControls = document.getElementById(`${id}Controls`);
         if (activeControls) activeControls.classList.remove('hidden');
 
+        // Sync sidebar nav-item highlight (needed when restoring from localStorage)
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.classList.toggle('active', item.getAttribute('data-module') === id);
+        });
+
         const nodesContainer = document.getElementById('nodesContainer');
         const arrowsCanvas = document.getElementById('arrowsCanvas');
         const memoryArrowsCanvas = document.getElementById('memoryArrowsCanvas');

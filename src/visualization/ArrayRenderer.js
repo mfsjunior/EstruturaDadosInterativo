@@ -37,8 +37,8 @@ class ArrayRenderer {
             
             const isStackMode = this.container?.classList?.contains('stack-mode');
             if (isStackMode) {
-                // In stack mode, hide numeric index — show nothing (top label is handled via is-stack-top CSS)
-                idxLabel.style.visibility = 'hidden';
+                // In stack mode, completely remove the index element to save space
+                idxLabel.style.display = 'none';
             } else {
                 idxLabel.textContent = i;
             }
