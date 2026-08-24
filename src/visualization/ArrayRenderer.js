@@ -34,7 +34,14 @@ class ArrayRenderer {
 
             const idxLabel = document.createElement('div');
             idxLabel.className = 'array-index';
-            idxLabel.textContent = i;
+            
+            const isStackMode = this.container?.classList?.contains('stack-mode');
+            if (isStackMode) {
+                // In stack mode, hide numeric index — show nothing (top label is handled via is-stack-top CSS)
+                idxLabel.style.visibility = 'hidden';
+            } else {
+                idxLabel.textContent = i;
+            }
 
             const relationLabel = document.createElement('div');
             relationLabel.className = 'array-relation';

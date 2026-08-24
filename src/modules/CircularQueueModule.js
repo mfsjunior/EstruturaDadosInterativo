@@ -237,4 +237,74 @@ class CircularQueueModule extends BaseModule {
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
     }
+
+    runScenario(scenarioId) {
+        const scenarios = window.DemoScenarios && Array.isArray(window.DemoScenarios.circularQueue)
+            ? window.DemoScenarios.circularQueue
+            : [];
+        const scenario = scenarios.find((entry) => entry.id === scenarioId);
+        if (!scenario || !Array.isArray(scenario.operations) || !scenario.operations.length) return;
+
+        this.resetSystem();
+        this.scenarioQueue = scenario.operations.map((operation) => ({
+            method: operation.method,
+            args: Array.isArray(operation.args) ? [...operation.args] : [],
+        }));
+        this.isScenarioRunning = true;
+        this.scenarioManualMode = false;
+        this._runNextScenarioOperation();
+    }
+
+    resetSystem() {
+        this.animationController.pause();
+        this.animationController.setResetHandler(null);
+        this.animationController.setSteps([]);
+        this.queue = new CircularQueue(8);
+        this.arrayRenderer.init(8, 0x3000, 4);
+        this.stepExecutor.clear();
+        const globals = this.appManager.getGlobals();
+        globals.statePanel.updateProp('size', 0);
+        globals.statePanel.updateProp('head', '-');
+        globals.statePanel.updateProp('tail', '-');
+        globals.callStackPanel.reset();
+        globals.localVarsPanel.clear();
+        globals.timelinePanel.clear();
+        globals.consolePanel.log('Fila Circular reinicializada.');
+        const title = document.getElementById('currentOperationTitle');
+        if (title) title.textContent = '-';
+        const counter = document.getElementById('stepCounter');
+        if (counter) counter.textContent = '0/0';
+        const action = document.getElementById('currentStepAction');
+        if (action) action.textContent = 'Aguardando operacao...';
+        document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+    }
+
+    _clearScenarioQueue() {
+        this.scenarioQueue = [];
+        this.isScenarioRunning = false;
+        this.scenarioManualMode = false;
+        const ctr = this.animationController;
+        if (ctr) {
+            ctr.onComplete = null;
+        }
+    }
+
+    _runNextScenarioOperation() {
+        if (!this.scenarioQueue || this.scenarioQueue.length === 0) {
+            this.isScenarioRunning = false;
+            return;
+        }
+
+        const nextOp = this.scenarioQueue.shift();
+
+        this.animationController.onComplete = () => {
+            if (this.scenarioManualMode) {
+                setTimeout(() => this._runNextScenarioOperation(), 500);
+            } else {
+                setTimeout(() => this._runNextScenarioOperation(), 100);
+            }
+        };
+
+        this.executeOperation(nextOp.method, nextOp.args, false, !this.scenarioManualMode);
+    }
 }

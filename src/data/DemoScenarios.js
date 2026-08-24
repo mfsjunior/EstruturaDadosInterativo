@@ -1,4 +1,45 @@
 window.DemoScenarios = {
+	circularQueue: [
+		{
+			id: 'cq-fill-dequeue',
+			label: 'Enfileirar e Remover',
+			operations: [
+				{ method: 'enqueue', args: [10] },
+				{ method: 'enqueue', args: [25] },
+				{ method: 'enqueue', args: [40] },
+				{ method: 'enqueue', args: [55] },
+				{ method: 'dequeue', args: [] },
+				{ method: 'dequeue', args: [] },
+			],
+			description: 'Enfileira 4 elementos e remove 2 mostrando o avanco da frente.'
+		},
+		{
+			id: 'cq-wrap-around',
+			label: 'Wrap-Around Circular',
+			operations: [
+				{ method: 'enqueue', args: [1] },
+				{ method: 'enqueue', args: [2] },
+				{ method: 'enqueue', args: [3] },
+				{ method: 'dequeue', args: [] },
+				{ method: 'dequeue', args: [] },
+				{ method: 'enqueue', args: [4] },
+				{ method: 'enqueue', args: [5] },
+				{ method: 'enqueue', args: [6] },
+			],
+			description: 'Demonstra o ponteiro traseiro dando a volta no array circular.'
+		},
+		{
+			id: 'cq-peek',
+			label: 'Peek no Frente',
+			operations: [
+				{ method: 'enqueue', args: [77] },
+				{ method: 'enqueue', args: [88] },
+				{ method: 'enqueue', args: [99] },
+				{ method: 'peek', args: [] },
+			],
+			description: 'Consulta o elemento na frente da fila sem remover.'
+		},
+	],
 	array: [
 		{
 			id: 'array-search',
@@ -16,7 +57,7 @@ window.DemoScenarios = {
 	stack: [
 		{
 			id: 'stack-fill-search',
-			label: 'Preencher e Buscar',
+			label: 'Preencher e Espiar Topo',
 			operations: [
 				{ method: 'push', args: [12] },
 				{ method: 'push', args: [44] },
@@ -27,7 +68,7 @@ window.DemoScenarios = {
 		},
 		{
 			id: 'stack-fill-pop',
-			label: 'Preencher e Remover',
+			label: 'Preencher e Desempilhar',
 			operations: [
 				{ method: 'push', args: [12] },
 				{ method: 'push', args: [44] },

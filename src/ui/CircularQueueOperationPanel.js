@@ -8,6 +8,43 @@ class CircularQueueOperationPanel {
         document.getElementById('btnQueueDequeue').addEventListener('click', () => this._handleDequeue());
         document.getElementById('btnQueuePeek').addEventListener('click', () => this._handlePeek());
         document.getElementById('btnQueueClear').addEventListener('click', () => this._handleClear());
+
+        this._renderScenarioButtons();
+    }
+
+    _renderScenarioButtons() {
+        const scenarios = window.DemoScenarios && Array.isArray(window.DemoScenarios.circularQueue)
+            ? window.DemoScenarios.circularQueue
+            : [];
+
+        if (!scenarios.length) return;
+
+        this._renderScenarioButtonsInto('CircularQueueControls', scenarios, 'controls-group');
+        this._renderScenarioButtonsInto('expandedScenarioBar', scenarios, 'expanded-scenarios');
+    }
+
+    _renderScenarioButtonsInto(containerId, scenarios, extraClass = '') {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const existing = container.querySelector('.scenarios-bar');
+        if (existing) existing.remove();
+
+        const bar = document.createElement('div');
+        bar.className = `scenarios-bar ${extraClass}`.trim();
+
+        scenarios.forEach((scenario) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'scenario-btn';
+            button.textContent = scenario.label;
+            button.addEventListener('click', () => {
+                this.module.runScenario(scenario.id);
+            });
+            bar.appendChild(button);
+        });
+
+        container.appendChild(bar);
     }
 
     _handleEnqueue() {
