@@ -96,6 +96,9 @@ class SyncManager {
         
         // Use a unique prefix to avoid collisions on the public PeerJS server
         const fullRoomId = `ed-interativo-${roomId}`.toLowerCase();
+        
+        // Set roomId early so auto-retry knows we are still attempting to connect
+        this.roomId = roomId;
 
         this.peer = new Peer(fullRoomId, {
             debug: 2
@@ -103,7 +106,6 @@ class SyncManager {
 
         this.peer.on('open', (id) => {
             this.isHost = true;
-            this.roomId = roomId;
             this._updateStatus(`Hospedando Sala: ${roomId}`);
         });
 
@@ -134,8 +136,21 @@ class SyncManager {
         this.peer.on('error', (err) => {
             console.error('PeerJS Error:', err);
             if (err.type === 'unavailable-id') {
-                this._updateStatus(`Erro: ID da sala ja esta em uso. Aguarde 1 minuto ou use outro nome.`);
-                this.appManager.getGlobals().consolePanel.log(`A sala '${roomId}' ainda esta bloqueada no servidor (talvez por um F5 recente). Tente outro nome ou aguarde um pouco.`, 'error');
+                this._updateStatus(`Erro: ID em uso. Reconectando em 3s...`);
+                this.appManager.getGlobals().consolePanel.log(`A sala '${roomId}' ainda esta bloqueada. Tentando reconectar automaticamente...`, 'warning');
+                
+                // Cleanup current broken peer
+                if (this.peer) {
+                    this.peer.destroy();
+                    this.peer = null;
+                }
+                
+                // Auto-retry
+                setTimeout(() => {
+                    if (this.roomId === roomId) { // Make sure user didn't try another room
+                        this.hostRoom(roomId);
+                    }
+                }, 3000);
             } else {
                 this._updateStatus(`Erro: ${err.type}`);
             }
