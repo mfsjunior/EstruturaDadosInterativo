@@ -44,7 +44,10 @@ class SyncManager {
                 conn.send({
                     action: 'SYNC_STATE',
                     payload: {
-                        activeModuleId: this.appManager.activeModuleId
+                        activeModuleId: this.appManager.activeModuleId,
+                        isPresentationMode: this.appManager.isPresentationMode,
+                        projectorProfile: this.appManager.projectorProfile,
+                        activeViewTab: this.appManager.activeViewTab
                     }
                 });
             });
@@ -142,9 +145,25 @@ class SyncManager {
                 if (payload.activeModuleId !== this.appManager.activeModuleId) {
                     this.appManager.loadModule(payload.activeModuleId);
                 }
+                if (payload.isPresentationMode !== undefined) this.appManager.togglePresentationMode(payload.isPresentationMode, true);
+                if (payload.projectorProfile) {
+                    this.appManager.projectorProfile = payload.projectorProfile;
+                    this.appManager._syncProjectorProfileUi();
+                }
+                if (payload.activeViewTab) this.appManager.setMainViewTab(payload.activeViewTab, true);
                 break;
             case 'CHANGE_MODULE':
                 this.appManager.loadModule(payload.moduleId);
+                break;
+            case 'SET_MAIN_VIEW_TAB':
+                this.appManager.setMainViewTab(payload.viewName, true);
+                break;
+            case 'TOGGLE_PRESENTATION_MODE':
+                this.appManager.togglePresentationMode(payload.isPresentationMode, true);
+                break;
+            case 'SET_PROJECTOR_PROFILE':
+                this.appManager.projectorProfile = payload.profile;
+                this.appManager._syncProjectorProfileUi();
                 break;
             case 'EXECUTE_OPERATION':
                 if (module && typeof module.executeOperation === 'function') {

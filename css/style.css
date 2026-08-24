@@ -3219,10 +3219,9 @@ body.tutorial-active .tutorial-highlight {
 
 /* When acting as a student/client, disable the control panels so they don't break the sync state */
 body.sync-client-mode .left-sidebar,
+body.sync-client-mode .app-header,
 body.sync-client-mode .bottom-timeline-panel,
-body.sync-client-mode .playback-controls,
 body.sync-client-mode #expandedScenarioBar,
-body.sync-client-mode .speed-control,
 body.sync-client-mode .module-controls {
     pointer-events: none !important;
     opacity: 0.5 !important;

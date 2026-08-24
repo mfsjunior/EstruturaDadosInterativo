@@ -386,6 +386,9 @@ class AppManager {
         btn.addEventListener('click', () => {
             this.projectorProfile = this.projectorProfile === 'ultra' ? 'projector' : 'ultra';
             this._syncProjectorProfileUi();
+            if (this.syncManager && this.syncManager.isHost) {
+                this.syncManager.broadcastAction('SET_PROJECTOR_PROFILE', { profile: this.projectorProfile });
+            }
         });
     }
 
@@ -398,13 +401,20 @@ class AppManager {
             if (value === 'normal' || value === 'projector' || value === 'ultra') {
                 this.projectorProfile = value;
                 this._syncProjectorProfileUi();
+                if (this.syncManager && this.syncManager.isHost) {
+                    this.syncManager.broadcastAction('SET_PROJECTOR_PROFILE', { profile: value });
+                }
             }
         });
     }
 
-    togglePresentationMode(forceValue) {
+
+    togglePresentationMode(forceValue, fromNetwork = false) {
         this.isPresentationMode = typeof forceValue === 'boolean' ? forceValue : !this.isPresentationMode;
         this._syncPresentationModeUi();
+        if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
+            this.syncManager.broadcastAction('TOGGLE_PRESENTATION_MODE', { isPresentationMode: this.isPresentationMode });
+        }
     }
 
     _bindSidebar() {
@@ -441,23 +451,33 @@ class AppManager {
         const tabs = document.querySelectorAll('.view-tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                this.activeViewTab = tab.getAttribute('data-view');
-                this._applyViewTab();
+                const viewName = tab.getAttribute('data-view');
+                this.setMainViewTab(viewName);
             });
         });
+    }
+
+    setMainViewTab(viewName, fromNetwork = false) {
+        if (this.activeViewTab === viewName) return;
+        
+        document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`.view-tab[data-view="${viewName}"]`);
+        if (activeTab) activeTab.classList.add('active');
+        
+        this.activeViewTab = viewName;
+        this._applyViewTab();
+        
+        if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
+            this.syncManager.broadcastAction('SET_MAIN_VIEW_TAB', { viewName });
+        }
     }
 
     _bindAlgorithmDebug() {
         const btn = document.getElementById('btnVisualAlgorithm');
         if (!btn) return;
         btn.addEventListener('click', () => {
-            this.activeViewTab = this.activeViewTab === 'debug' ? 'logical' : 'debug';
-            document.querySelectorAll('.view-tab').forEach((tab) => {
-                tab.classList.toggle('active', tab.getAttribute('data-view') === this.activeViewTab);
-            });
-            this._applyViewTab();
+            const nextView = this.activeViewTab === 'debug' ? 'logical' : 'debug';
+            this.setMainViewTab(nextView);
         });
     }
 
