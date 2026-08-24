@@ -630,8 +630,9 @@ class AppManager {
         if (appBody) appBody.classList.toggle('presentation-mode', this.isPresentationMode);
         if (centerWorkspace) centerWorkspace.classList.toggle('expanded', this.isPresentationMode);
 
-        const showScenarios = this.isPresentationMode && (this.activeModuleId === 'LinkedList' || this.activeModuleId === 'BST' || this.activeModuleId === 'AVL' || this.activeModuleId === 'RedBlack' || this.activeModuleId === 'Trie' || this.activeModuleId === 'FenwickTree' || this.activeModuleId === 'UnionFind' || this.activeModuleId === 'Graph');
         if (expandedScenarioBar) {
+            const hasScenarios = expandedScenarioBar.querySelectorAll('.scenario-btn').length > 0;
+            const showScenarios = this.isPresentationMode && hasScenarios;
             expandedScenarioBar.classList.toggle('hidden', !showScenarios);
         }
 
