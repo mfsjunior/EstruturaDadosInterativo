@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ED Lab | Estruturas de Dados Interativas</title>
     <link rel="stylesheet" href="css/style.css?v=20260824-2" />
+    <!-- PeerJS for WebRTC -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
     <div class="app-layout">
@@ -791,9 +793,16 @@
     <script src="src/visualization/ArrayRenderer.js?v=20260820-3"></script>
     <script src="src/visualization/BSTRenderer.js?v=20260820-3"></script>
     <script src="src/visualization/GraphRenderer.js?v=20260820-3"></script>
-    <script src="src/ui/ConsolePanel.js?v=20260820-3"></script>
-    <script src="src/ui/StatePanel.js?v=20260820-3"></script>
-    <script src="src/ui/ComplexityPanel.js?v=20260820-3"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- Core & Globals -->
+    <script src="src/core/SyncManager.js"></script>
+    <script src="src/core/AppManager.js"></script>
+    
+    <!-- UI Components -->
+    <script src="src/ui/ConsolePanel.js"></script>
+    <script src="src/ui/StatePanel.js"></script>
+    <script src="src/ui/ComplexityPanel.js"></script>
+    <script src="src/ui/SyncPanel.js"></script>
     <script src="src/ui/CallStackPanel.js?v=20260820-3"></script>
     <script src="src/ui/LocalVariablesPanel.js?v=20260820-3"></script>
     <script src="src/ui/TimelinePanel.js?v=20260820-3"></script>

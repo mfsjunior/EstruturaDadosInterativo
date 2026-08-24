@@ -13,8 +13,13 @@ class AppManager {
         });
         this.algorithmDebugPanel = new AlgorithmDebugPanel(this);
 
+        this.syncManager = new SyncManager(this);
+        this.syncPanel = new SyncPanel(this);
+        window.appSyncManager = this.syncManager; // Expose globally for modules
+
         this.modules = {};
         this.activeModule = null;
+        this.activeModuleId = null;
         this.animationController = null;
         this.activeViewTab = 'logical';
         this.isPresentationMode = false;
@@ -79,7 +84,13 @@ class AppManager {
     }
 
     loadModule(id) {
-        if (this.activeModule && this.activeModule !== this.modules[id]) {
+        if (this.activeModuleId === id) return;
+
+        if (this.syncManager && this.syncManager.isHost) {
+            this.syncManager.broadcastAction('CHANGE_MODULE', { moduleId: id });
+        }
+
+        if (this.activeModule) {
             this.activeModule.destroy();
         }
 

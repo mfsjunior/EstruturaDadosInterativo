@@ -25,13 +25,15 @@ class AnimationController {
         this._notifyStep();
     }
 
-    play() {
+    play(fromNetwork = false) {
+        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('ANIM_PLAY');
         if (!this.steps.length) return;
         this.isPlaying = true;
         this._scheduleNext();
     }
 
-    pause() {
+    pause(fromNetwork = false) {
+        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('ANIM_PAUSE');
         this.isPlaying = false;
         if (this.timer) {
             clearTimeout(this.timer);
@@ -39,7 +41,8 @@ class AnimationController {
         }
     }
 
-    restart() {
+    restart(fromNetwork = false) {
+        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('ANIM_RESTART');
         this.pause();
         this.currentIndex = 0;
         this._resetVisualState();
@@ -69,7 +72,8 @@ class AnimationController {
         this._notifyStep();
     }
 
-    stepForward() {
+    stepForward(fromNetwork = false) {
+        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('ANIM_STEP_FORWARD');
         if (this.currentIndex >= this.steps.length) return;
         const step = this.steps[this.currentIndex];
         this.stepExecutor.execute(step);
@@ -81,7 +85,8 @@ class AnimationController {
         }
     }
 
-    fastForward() {
+    fastForward(fromNetwork = false) {
+        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('ANIM_FAST_FORWARD');
         this.pause();
         const lastIndex = this.steps.length - 1;
 
@@ -99,7 +104,8 @@ class AnimationController {
         this._finish();
     }
 
-    setSpeed(value) {
+    setSpeed(value, fromNetwork = false) {
+        if (!fromNetwork && window.appSyncManager) window.appSyncManager.broadcastAction('ANIM_SET_SPEED', { speed: value });
         const next = Number(value) || 1;
         this.speed = next;
     }
