@@ -2550,10 +2550,10 @@ input[type="text"], input[type="number"] {
 }
 
 #timelineActionText.highlight-success {
-    background: rgba(16, 185, 129, 0.25) !important;
-    border-color: rgba(16, 185, 129, 0.6) !important;
-    color: #34d399 !important;
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    background: rgba(245, 158, 11, 0.25) !important;
+    border-color: rgba(245, 158, 11, 0.6) !important;
+    color: var(--warning-color) !important;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
     transform: scale(1.02);
 }
 
