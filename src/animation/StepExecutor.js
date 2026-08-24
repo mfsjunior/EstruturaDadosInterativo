@@ -233,7 +233,11 @@ class StepExecutor {
         // Handle visual state
         switch (step.type) {
             case 'INFO':
-                // Just log (already done)
+                if (!isFast && step.data && step.data.target) {
+                    const baseText = this.codeHighlighter.lastActiveLineText || (step.description || '').replace(/<[^>]+>/g, '');
+                    const isSuccess = step.data.isSuccess || String(baseText).match(/encontrado no (indice|índice)/i);
+                    this.nodeRenderer.highlightNode(step.data.target, !!isSuccess);
+                }
                 break;
             case 'ERROR':
                 this.consolePanel.log(step.data.msg);
