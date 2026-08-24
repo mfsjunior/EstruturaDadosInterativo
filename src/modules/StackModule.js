@@ -83,7 +83,6 @@ class StackModule extends BaseModule {
     }
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true) {
-        autoPlay = false;
         if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
             this.animationController.fastForward();
         }
