@@ -8,6 +8,43 @@ class StackOperationPanel {
         document.getElementById('btnStackPop').addEventListener('click', () => this._handlePop());
         document.getElementById('btnStackPeek').addEventListener('click', () => this._handlePeek());
         document.getElementById('btnStackClear').addEventListener('click', () => this._handleClear());
+
+        this._renderScenarioButtons();
+    }
+
+    _renderScenarioButtons() {
+        const scenarios = window.DemoScenarios && Array.isArray(window.DemoScenarios.stack)
+            ? window.DemoScenarios.stack
+            : [];
+
+        if (!scenarios.length) return;
+
+        this._renderScenarioButtonsInto('StackControls', scenarios, 'controls-group');
+        this._renderScenarioButtonsInto('expandedScenarioBar', scenarios, 'expanded-scenarios');
+    }
+
+    _renderScenarioButtonsInto(containerId, scenarios, extraClass = '') {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const existing = container.querySelector('.scenarios-bar');
+        if (existing) existing.remove();
+
+        const bar = document.createElement('div');
+        bar.className = `scenarios-bar ${extraClass}`.trim();
+
+        scenarios.forEach((scenario) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'scenario-btn';
+            button.textContent = scenario.label;
+            button.addEventListener('click', () => {
+                this.module.runScenario(scenario.id);
+            });
+            bar.appendChild(button);
+        });
+
+        container.appendChild(bar);
     }
 
     _handlePush() {

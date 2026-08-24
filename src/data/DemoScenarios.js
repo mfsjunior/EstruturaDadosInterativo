@@ -13,6 +13,31 @@ window.DemoScenarios = {
 			description: 'Insere elementos aleatorios e faz a busca pelo numero 47.'
 		}
 	],
+	stack: [
+		{
+			id: 'stack-fill-search',
+			label: 'Preencher e Buscar',
+			operations: [
+				{ method: 'push', args: [12] },
+				{ method: 'push', args: [44] },
+				{ method: 'push', args: [89] },
+				{ method: 'push', args: [2] },
+				{ method: 'peek', args: [] },
+			],
+		},
+		{
+			id: 'stack-fill-pop',
+			label: 'Preencher e Remover',
+			operations: [
+				{ method: 'push', args: [12] },
+				{ method: 'push', args: [44] },
+				{ method: 'push', args: [89] },
+				{ method: 'push', args: [2] },
+				{ method: 'pop', args: [] },
+				{ method: 'pop', args: [] },
+			],
+		}
+	],
 	linkedList: [
 		{
 			id: 'build-chain',
