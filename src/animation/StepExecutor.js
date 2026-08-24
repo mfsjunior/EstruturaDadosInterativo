@@ -215,7 +215,7 @@ class StepExecutor {
             
             const timelineAction = document.getElementById('timelineActionText');
             if (timelineAction) {
-                timelineAction.textContent = fullText;
+                timelineAction.textContent = baseText;
             }
         }
 
