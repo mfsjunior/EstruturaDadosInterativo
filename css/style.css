@@ -3222,7 +3222,8 @@ body.sync-client-mode .left-sidebar,
 body.sync-client-mode .bottom-timeline-panel,
 body.sync-client-mode .playback-controls,
 body.sync-client-mode #expandedScenarioBar,
-body.sync-client-mode .speed-control {
+body.sync-client-mode .speed-control,
+body.sync-client-mode .module-controls {
     pointer-events: none !important;
     opacity: 0.5 !important;
     filter: grayscale(100%);
