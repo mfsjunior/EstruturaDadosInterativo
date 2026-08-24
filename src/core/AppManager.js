@@ -432,6 +432,10 @@ class AppManager {
                 const isCollapsed = sidebar.classList.contains('collapsed');
                 toggleBtn.setAttribute('aria-label', isCollapsed ? 'Mostrar menu lateral' : 'Ocultar menu lateral');
                 requestAnimationFrame(() => this._refreshActiveTreeLayout());
+                
+                if (this.syncManager && this.syncManager.isHost) {
+                    this.syncManager.broadcastAction('TOGGLE_SIDEBAR', { isCollapsed });
+                }
             });
         }
 
@@ -445,6 +449,14 @@ class AppManager {
                 if (moduleId) this.loadModule(moduleId);
             });
         });
+        
+        if (sidebar) {
+            sidebar.addEventListener('scroll', () => {
+                if (this.syncManager && this.syncManager.isHost) {
+                    this.syncManager.broadcastAction('SYNC_SCROLL', { scrollTop: sidebar.scrollTop });
+                }
+            });
+        }
     }
 
     _bindViewTabs() {

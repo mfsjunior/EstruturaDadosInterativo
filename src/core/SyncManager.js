@@ -47,7 +47,8 @@ class SyncManager {
                         activeModuleId: this.appManager.activeModuleId,
                         isPresentationMode: this.appManager.isPresentationMode,
                         projectorProfile: this.appManager.projectorProfile,
-                        activeViewTab: this.appManager.activeViewTab
+                        activeViewTab: this.appManager.activeViewTab,
+                        isSidebarCollapsed: document.querySelector('.left-sidebar')?.classList.contains('collapsed')
                     }
                 });
             });
@@ -151,6 +152,10 @@ class SyncManager {
                     this.appManager._syncProjectorProfileUi();
                 }
                 if (payload.activeViewTab) this.appManager.setMainViewTab(payload.activeViewTab, true);
+                if (payload.isSidebarCollapsed !== undefined) {
+                    const sidebar = document.querySelector('.left-sidebar');
+                    if (sidebar) sidebar.classList.toggle('collapsed', payload.isSidebarCollapsed);
+                }
                 break;
             case 'CHANGE_MODULE':
                 this.appManager.loadModule(payload.moduleId);
@@ -164,6 +169,17 @@ class SyncManager {
             case 'SET_PROJECTOR_PROFILE':
                 this.appManager.projectorProfile = payload.profile;
                 this.appManager._syncProjectorProfileUi();
+                break;
+            case 'SYNC_SCROLL':
+                const sidebar = document.querySelector('.left-sidebar');
+                if (sidebar) sidebar.scrollTop = payload.scrollTop;
+                break;
+            case 'TOGGLE_SIDEBAR':
+                const sb = document.querySelector('.left-sidebar');
+                if (sb) {
+                    sb.classList.toggle('collapsed', payload.isCollapsed);
+                    if (this.appManager._refreshActiveTreeLayout) requestAnimationFrame(() => this.appManager._refreshActiveTreeLayout());
+                }
                 break;
             case 'EXECUTE_OPERATION':
                 if (module && typeof module.executeOperation === 'function') {
