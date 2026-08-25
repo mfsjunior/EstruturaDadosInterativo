@@ -2206,19 +2206,29 @@ input[type="number"] {
 }
 
 .highlight-warning {
-    animation: highlightWarning 2.5s ease-out !important;
+    animation: highlightWarning 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    z-index: 20; /* Ensure it pops over other elements */
 }
 
 @keyframes highlightWarning {
     0% {
         border-color: var(--warning-color);
-        transform: translateY(-10px);
+        background-color: rgba(245, 158, 11, 0.35);
+        transform: scale(1.15) translateY(-8px);
+        box-shadow: 0 0 25px rgba(245, 158, 11, 0.8), inset 0 0 15px rgba(245, 158, 11, 0.4);
+        color: #fff;
+    }
+
+    30% {
+        background-color: rgba(245, 158, 11, 0.2);
+        transform: scale(1.1) translateY(-4px);
         box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
     }
 
     100% {
         border-color: var(--primary-color);
-        transform: translateY(0);
+        background-color: transparent;
+        transform: scale(1) translateY(0);
         box-shadow: none;
     }
 }
