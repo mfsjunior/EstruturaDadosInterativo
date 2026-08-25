@@ -102,6 +102,10 @@ class CircularQueueModule extends BaseModule {
             globals.callStackPanel.reset();
             globals.callStackPanel.push(methodName + '(' + args.join(', ') + ')');
             globals.timelinePanel.setSteps(steps);
+            
+            if (autoPlay && this.debugEngine) {
+                this.debugEngine.play();
+            }
             return;
         }
 
@@ -357,13 +361,18 @@ class CircularQueueModule extends BaseModule {
 
         const nextOp = this.scenarioQueue.shift();
 
-        this.animationController.onComplete = () => {
+        const onOpComplete = () => {
             if (this.scenarioManualMode) {
                 setTimeout(() => this._runNextScenarioOperation(), 500);
             } else {
                 setTimeout(() => this._runNextScenarioOperation(), 100);
             }
         };
+
+        this.animationController.onComplete = onOpComplete;
+        if (this.debugEngine) {
+            this.debugEngine.onComplete = onOpComplete;
+        }
 
         this.executeOperation(nextOp.method, nextOp.args, false, !this.scenarioManualMode);
     }
