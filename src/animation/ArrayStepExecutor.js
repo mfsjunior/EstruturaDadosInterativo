@@ -176,9 +176,17 @@ class ArrayStepExecutor {
     }
 
     _codeForStep(step) {
-        const raw = String(step?.codeLine || '');
+        const raw = String(step?.codeLine || step?.code || '');
         if (!raw.trim()) return '';
         if (raw.includes('<---')) return raw;
+
+        const lines = raw.split('\n');
+
+        if (step.data && typeof step.data.activeLine === 'number' && step.data.activeLine >= 1 && step.data.activeLine <= lines.length) {
+            const idx = step.data.activeLine - 1;
+            lines[idx] = `${lines[idx]} // <---`;
+            return lines.join('\n');
+        }
 
         const matcherByType = {
             ARRAY_DIRECT_ACCESS: /(return\s+array\[|T\s+value\s*=\s*array\[front\])/,
