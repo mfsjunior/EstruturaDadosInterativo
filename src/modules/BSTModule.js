@@ -17,8 +17,7 @@ class BSTModule extends BaseModule {
         this.scenarioManualMode = false;
         this.pendingScenarioLabel = '';
         this.pendingScenarioDescription = '';
-        this.debugEngine = null;
-        this.debugBaseline = null;
+        this.pendingScenarioDescription = '';
     }
 
     init() {
@@ -38,26 +37,7 @@ class BSTModule extends BaseModule {
             globals.algorithmDebugPanel || null
         );
         this.animationController = new AnimationController(this.stepExecutor);
-        this.debugEngine = new AlgorithmExecutionEngine({
-            onApply: (event, isFast) => {
-                const step = event.rawStep;
-                if (!step) return;
-                step.__algorithmEvent = event;
-                if (isFast) this.stepExecutor.executeFast(step);
-                else this.stepExecutor.execute(step);
-            },
-            onReset: () => {
-                this.stepExecutor.restoreSnapshot(this.debugBaseline || this._captureSnapshot());
-            },
-            onProgress: (currentIndex, total, lastEvent) => {
-                const counter = document.getElementById('stepCounter');
-                if (counter) counter.textContent = `${currentIndex}/${total}`;
-                const globalsInner = this.appManager.getGlobals();
-                if (globalsInner.algorithmDebugPanel) {
-                    globalsInner.algorithmDebugPanel.onProgress(currentIndex, total, lastEvent);
-                }
-            },
-        });
+        this.initDebugEngine('bst');
         this.tree = new BinarySearchTree();
         this.operationPanel = new BSTOperationPanel(this);
         this._bindPlaybackControls();
@@ -99,10 +79,19 @@ class BSTModule extends BaseModule {
     }
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true, options = {}) {
-        const isDebugMode = this.appManager.activeViewTab === 'debug';
-        const supportsEventDebug = methodName === 'contains' || methodName === 'insert' || methodName === 'bfs' || methodName === 'dfs';
-        if (isDebugMode && supportsEventDebug && !this.isScenarioRunning) {
-            this._executeOperationInDebugMode(methodName, args, silent);
+        if (this.appManager.activeViewTab === 'debug' && !this.isScenarioRunning) {
+            const steps = this.runDebugSession(
+                methodName, 
+                args, 
+                'bst', 
+                () => this.tree[methodName](...args), 
+                () => this.tree.getSteps()
+            );
+            
+            const globals = this.appManager.getGlobals();
+            globals.callStackPanel.reset();
+            globals.callStackPanel.push(methodName + '(' + args.join(', ') + ')');
+            globals.timelinePanel.setSteps(steps);
             return;
         }
 
@@ -111,7 +100,6 @@ class BSTModule extends BaseModule {
         }
 
         const baseline = this._captureSnapshot();
-        this.debugBaseline = baseline;
         this.tree[methodName](...args);
         const steps = this.tree.getSteps();
         const globals = this.appManager.getGlobals();
@@ -150,140 +138,12 @@ class BSTModule extends BaseModule {
         }
     }
 
-    _executeOperationInDebugMode(methodName, args = [], silent = false) {
-        if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
-            this.animationController.fastForward();
-        }
-
-        const baseline = this._captureSnapshot();
-        this.tree[methodName](...args);
-        const steps = this.tree.getSteps();
-        const events = this._buildAlgorithmEvents(methodName, args, steps, baseline);
-        const globals = this.appManager.getGlobals();
-
-        const title = document.getElementById('currentOperationTitle');
-        if (title && !silent) title.textContent = `${methodName}(${args.join(', ')})`;
-
-        globals.callStackPanel.reset();
-        globals.callStackPanel.push(`${methodName}(${args.join(', ')})`);
-        globals.timelinePanel.setSteps(steps);
-
-        if (globals.algorithmDebugPanel) {
-            const codeCandidate = steps.find((step) => String(step?.codeLine || '').includes('public '));
-            const codeText = codeCandidate ? String(codeCandidate.codeLine || '').trim() : '';
-            globals.algorithmDebugPanel.startSession({
-                modeLabel: 'ALGORITHM DEBUGGER | BST',
-                operationText: `${methodName}(${args.join(', ')})`,
-                codeText: codeText || '// Sem codigo para este passo',
-                events,
-            });
-            globals.algorithmDebugPanel.bindEngine(this.debugEngine);
-        }
-
-        this.debugEngine.setEvents(events);
-        const autoPauseInput = document.getElementById('debugAutoPause');
-        this.debugEngine.setAutoPauseEachEvent(!!autoPauseInput?.checked);
-        this.debugEngine.reset();
-    }
-
-    _buildAlgorithmEvents(methodName, args, steps, baseline) {
-        const target = Array.isArray(args) && args.length ? args[0] : null;
-        let result = [];
-        let visited = [];
-        const events = [];
-
-        const debugSteps = Array.isArray(steps)
-            ? steps.filter((step) => step && step.type !== 'INFO')
-            : [];
-
-        debugSteps.forEach((step, index) => {
-            const focusNodeId = step?.data?.focusNodeId || null;
-            const tree = step?.data?.tree || null;
-            const focusNode = tree && Array.isArray(tree.nodes) && focusNodeId
-                ? tree.nodes.find((node) => node.id === focusNodeId)
-                : null;
-
-            if (focusNode && !visited.includes(focusNode.value)) {
-                visited = [...visited, focusNode.value];
-            }
-
-            if (methodName === 'contains') {
-                if (String(step.description || '').toLowerCase().includes('encontramos')) {
-                    result = [target];
-                }
-            }
-
-            if (methodName === 'insert' && focusNode && Number(focusNode.value) === Number(target)) {
-                result = [target];
-            }
-
-            const type = this._eventTypeFromStep(step);
-            const why = this._whyFromStep(step);
-            const variables = {
-                target,
-                current: focusNode ? focusNode.value : '-',
-                path: [...visited],
-                result: [...result],
-                found: result.length > 0,
-            };
-            if (step.data?.debugVars && typeof step.data.debugVars === 'object') {
-                Object.assign(variables, step.data.debugVars);
-                if (Array.isArray(step.data.debugVars.result)) {
-                    variables.result = [...step.data.debugVars.result];
-                }
-            }
-
-            events.push(new AlgorithmEvent({
-                id: `bst_evt_${index + 1}`,
-                type,
-                step: index + 1,
-                lineNumber: Number.isInteger(step?.data?.activeLine) ? step.data.activeLine : null,
-                description: String(step.description || type),
-                why,
-                nodeId: focusNodeId,
-                affectedNodes: focusNodeId ? [focusNodeId] : [],
-                variables,
-                beforeState: baseline,
-                afterState: step.data?.state || null,
-                animation: type === 'NODE_FOUND' ? 'found' : 'highlight',
-                rawStep: step,
-            }));
-        });
-
-        return events;
-    }
-
-    _eventTypeFromStep(step) {
-        const text = String(step?.description || '').toLowerCase();
-        if (text.includes('desempilh')) return 'NODE_POPPED';
-        if (text.includes('enfileir')) return 'NODE_ENQUEUED';
-        if (text.includes('removendo') && text.includes('fila')) return 'NODE_DEQUEUED';
-        if (text.includes('empilh')) return 'NODE_PUSHED';
-        if (text.includes('encontramos')) return 'NODE_FOUND';
-        if (text.includes('esquerda') || text.includes('direita')) return 'NODE_COMPARED';
-        if (text.includes('inser')) return 'NODE_INSERTED';
-        if (text.includes('visit')) return 'NODE_VISITED';
-        return 'NODE_SELECTED';
-    }
-
-    _whyFromStep(step) {
-        if (typeof step?.data?.cloud === 'string' && step.data.cloud.trim()) {
-            return step.data.cloud.trim();
-        }
-        return String(step?.description || 'Passo executado para manter as propriedades da BST.');
-    }
-
     runScenario(scenarioId) {
         const scenarios = window.DemoScenarios && Array.isArray(window.DemoScenarios.bst)
             ? window.DemoScenarios.bst
             : [];
         const scenario = scenarios.find((entry) => entry.id === scenarioId);
         if (!scenario || !Array.isArray(scenario.values) || !scenario.values.length) return;
-
-        if (this.appManager.activeViewTab === 'debug') {
-            this._runScenarioInDebugMode(scenario);
-            return;
-        }
 
         this.resetSystem();
         this.scenarioQueue = scenario.values.map((value) => ({
@@ -301,51 +161,6 @@ class BSTModule extends BaseModule {
         if (action) action.textContent = this.pendingScenarioDescription;
 
         this._runNextScenarioOperation();
-    }
-
-    _runScenarioInDebugMode(scenario) {
-        if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
-            this.animationController.fastForward();
-        }
-        if (this.debugEngine) this.debugEngine.pause();
-
-        this.resetSystem();
-
-        const baseline = this._captureSnapshot();
-        const allSteps = [];
-        scenario.values.forEach((value) => {
-            this.tree.insert(value);
-            allSteps.push(...this.tree.getSteps());
-        });
-
-        const events = this._buildAlgorithmEvents('scenario', [], allSteps, baseline);
-        const globals = this.appManager.getGlobals();
-
-        const title = document.getElementById('currentOperationTitle');
-        if (title) title.textContent = scenario.label || 'BST Scenario';
-        const action = document.getElementById('currentStepAction');
-        if (action) action.textContent = scenario.description || 'Cenario em modo debug.';
-
-        globals.callStackPanel.reset();
-        globals.callStackPanel.push(`scenario(${scenario.id})`);
-        globals.timelinePanel.setSteps(allSteps);
-
-        if (globals.algorithmDebugPanel) {
-            const codeCandidate = allSteps.find((step) => String(step?.codeLine || '').includes('public '));
-            const codeText = codeCandidate ? String(codeCandidate.codeLine || '').trim() : '';
-            globals.algorithmDebugPanel.startSession({
-                modeLabel: 'ALGORITHM DEBUGGER | BST',
-                operationText: scenario.label || `scenario(${scenario.id})`,
-                codeText: codeText || '// Sem codigo para este passo',
-                events,
-            });
-            globals.algorithmDebugPanel.bindEngine(this.debugEngine);
-        }
-
-        this.debugEngine.setEvents(events);
-        const autoPauseInput = document.getElementById('debugAutoPause');
-        this.debugEngine.setAutoPauseEachEvent(!!autoPauseInput?.checked);
-        this.debugEngine.reset();
     }
 
     resetSystem() {
@@ -416,6 +231,16 @@ class BSTModule extends BaseModule {
 
     _bindPlaybackControls() {
         this._handlePlayPause = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                if (this.debugEngine.isPlaying) {
+                    this.debugEngine.pause();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                } else {
+                    this.debugEngine.play();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x23F8);
+                }
+                return;
+            }
             if (this.animationController.isPlaying) {
                 this.animationController.pause();
                 document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -428,6 +253,11 @@ class BSTModule extends BaseModule {
         document.getElementById('btnPlayPause').addEventListener('click', this._handlePlayPause);
 
         this._handleFastForward = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.finish();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             if (this.isScenarioRunning) this.scenarioManualMode = false;
             this.animationController.fastForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -435,6 +265,12 @@ class BSTModule extends BaseModule {
         document.getElementById('btnFastForward').addEventListener('click', this._handleFastForward);
 
         this._handleNextStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.next();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             if (this.isScenarioRunning) this.scenarioManualMode = true;
             this.animationController.pause();
             this.animationController.stepForward();
@@ -442,7 +278,28 @@ class BSTModule extends BaseModule {
         };
         document.getElementById('btnNextStep').addEventListener('click', this._handleNextStep);
 
+        this._handlePrevStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.previous();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
+            this.animationController.pause();
+            document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+        };
+        const btnPrevStep = document.getElementById('btnPrevStep');
+        if (btnPrevStep) {
+            btnPrevStep.addEventListener('click', this._handlePrevStep);
+        }
+
         this._handleRestart = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.reset();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.resetSystem();
             const globals = this.appManager.getGlobals();
             globals.consolePanel.log('BST reinicializada.');
@@ -451,7 +308,11 @@ class BSTModule extends BaseModule {
         document.getElementById('btnRestartAnim').addEventListener('click', this._handleRestart);
 
         this._handleSpeedSelect = (e) => {
-            this.animationController.setSpeed(parseFloat(e.target.value));
+            const val = parseFloat(e.target.value);
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine) {
+                this.debugEngine.setSpeed(val);
+            }
+            this.animationController.setSpeed(val);
         };
         document.getElementById('speedSelect').addEventListener('change', this._handleSpeedSelect);
 

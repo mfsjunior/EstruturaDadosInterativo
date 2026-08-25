@@ -36,6 +36,9 @@ class TrieModule extends BaseModule {
             globals.complexityPanel
         );
         this.animationController = new AnimationController(this.stepExecutor);
+        
+        this.initDebugEngine('trie');
+        
         this.tree = new Trie();
         this.operationPanel = new TrieOperationPanel(this);
         this._bindPlaybackControls();
@@ -59,6 +62,10 @@ class TrieModule extends BaseModule {
             this.animationController.pause();
             this.animationController = null;
         }
+        if (this.debugEngine) {
+            this.debugEngine.pause();
+            this.debugEngine = null;
+        }
 
         this._clearScenarioQueue();
 
@@ -79,6 +86,22 @@ class TrieModule extends BaseModule {
     }
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true, options = {}) {
+        if (this.appManager.activeViewTab === 'debug') {
+            const steps = this.runDebugSession(
+                methodName, 
+                args, 
+                'trie', 
+                () => this.tree[methodName](...args), 
+                () => this.tree.getSteps()
+            );
+            
+            const globals = this.appManager.getGlobals();
+            globals.callStackPanel.reset();
+            globals.callStackPanel.push(methodName + '(' + args.join(', ') + ')');
+            globals.timelinePanel.setSteps(steps);
+            return;
+        }
+
         autoPlay = false;
         if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
             this.animationController.fastForward();
@@ -159,9 +182,12 @@ class TrieModule extends BaseModule {
 
     resetSystem() {
         this._clearScenarioQueue();
-        this.animationController.pause();
-        this.animationController.setResetHandler(null);
-        this.animationController.setSteps([]);
+        if (this.animationController) {
+            this.animationController.pause();
+            this.animationController.setResetHandler(null);
+            this.animationController.setSteps([]);
+        }
+        if (this.debugEngine) this.debugEngine.pause();
         this.tree = new Trie();
         this.stepExecutor.clear();
 
@@ -226,6 +252,16 @@ class TrieModule extends BaseModule {
 
     _bindPlaybackControls() {
         this._handlePlayPause = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                if (this.debugEngine.isPlaying) {
+                    this.debugEngine.pause();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                } else {
+                    this.debugEngine.play();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x23F8);
+                }
+                return;
+            }
             if (this.animationController.isPlaying) {
                 this.animationController.pause();
                 document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -238,6 +274,11 @@ class TrieModule extends BaseModule {
         document.getElementById('btnPlayPause').addEventListener('click', this._handlePlayPause);
 
         this._handleFastForward = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.finish();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             if (this.isScenarioRunning) this.scenarioManualMode = false;
             this.animationController.fastForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -245,6 +286,12 @@ class TrieModule extends BaseModule {
         document.getElementById('btnFastForward').addEventListener('click', this._handleFastForward);
 
         this._handleNextStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.next();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             if (this.isScenarioRunning) this.scenarioManualMode = true;
             this.animationController.pause();
             this.animationController.stepForward();
@@ -252,7 +299,28 @@ class TrieModule extends BaseModule {
         };
         document.getElementById('btnNextStep').addEventListener('click', this._handleNextStep);
 
+        this._handlePrevStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.previous();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
+            this.animationController.pause();
+            document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+        };
+        const btnPrevStep = document.getElementById('btnPrevStep');
+        if (btnPrevStep) {
+            btnPrevStep.addEventListener('click', this._handlePrevStep);
+        }
+
         this._handleRestart = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.reset();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.resetSystem();
             const globals = this.appManager.getGlobals();
             globals.consolePanel.log('Trie reinicializada.');
@@ -261,7 +329,13 @@ class TrieModule extends BaseModule {
         document.getElementById('btnRestartAnim').addEventListener('click', this._handleRestart);
 
         this._handleSpeedSelect = (e) => {
-            this.animationController.setSpeed(parseFloat(e.target.value));
+            const val = parseFloat(e.target.value);
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine) {
+                this.debugEngine.setSpeed(val);
+            }
+            if (this.animationController) {
+                this.animationController.setSpeed(val);
+            }
         };
         document.getElementById('speedSelect').addEventListener('change', this._handleSpeedSelect);
 

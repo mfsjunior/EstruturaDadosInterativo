@@ -50,8 +50,10 @@ class ManualStack {
         this._startOperation(`push(${value})`);
         const code = `public void push(T value) {\n    if (size == capacity) resize();\n    array[size] = value;\n    size++;\n}`;
 
+        this._addStep('STEP', { activeLine: 2 }, code, `Verificando se a pilha esta cheia (size == capacity).`);
+
         if (this.size === this.capacity) {
-            this._addStep('INFO', {}, code, `Capacidade atingida (${this.capacity}). Realocando pilha...`);
+            this._addStep('INFO', { activeLine: 2 }, code, `Capacidade atingida (${this.capacity}). Realocando pilha...`);
             this._resize(code);
         }
 
@@ -59,27 +61,29 @@ class ManualStack {
         this.data[index] = value;
         this.size++;
 
-        this._addStep('ARRAY_INSERT', { index, value, size: this.size }, code, `Push de ${value} no topo da pilha (indice ${index}).`);
-        this._addStep('UPDATE_STATE', { head: '-', tail: this._topLabel(), size: this.size }, code, `Topo agora esta em ${this._topLabel()}.`);
+        this._addStep('ARRAY_INSERT', { index, value, size: this.size, activeLine: 3 }, code, `Push de ${value} no topo da pilha (indice ${index}).`);
+        this._addStep('UPDATE_STATE', { head: '-', tail: this._topLabel(), size: this.size, activeLine: 4 }, code, `Topo agora esta em ${this._topLabel()}.`);
     }
 
     pop() {
         this._startOperation('pop()');
         const code = `public T pop() {\n    if (size == 0) return null;\n    T removed = array[size - 1];\n    array[size - 1] = null;\n    size--;\n    return removed;\n}`;
 
+        this._addStep('STEP', { activeLine: 2 }, code, `Verificando se a pilha esta vazia (size == 0).`);
+
         if (this.size === 0) {
-            this._addStep('ERROR', {}, code, 'Pilha vazia. Nada para remover.');
+            this._addStep('ERROR', { activeLine: 2 }, code, 'Pilha vazia. Nada para remover.');
             return null;
         }
 
         const index = this.size - 1;
         const value = this.data[index];
-        this._addStep('ARRAY_DIRECT_ACCESS', { index, isSuccess: true }, code, `Lendo topo atual no indice ${index}.`);
+        this._addStep('ARRAY_DIRECT_ACCESS', { index, isSuccess: true, activeLine: 3 }, code, `Lendo topo atual no indice ${index}.`);
 
         this.data[index] = undefined;
         this.size--;
-        this._addStep('ARRAY_REMOVE_END', { index, size: this.size }, code, `Pop removeu ${value} do topo.`);
-        this._addStep('UPDATE_STATE', { head: '-', tail: this._topLabel(), size: this.size }, code, `Novo topo: ${this._topLabel()}.`);
+        this._addStep('ARRAY_REMOVE_END', { index, size: this.size, activeLine: 4 }, code, `Pop removeu ${value} do topo.`);
+        this._addStep('UPDATE_STATE', { head: '-', tail: this._topLabel(), size: this.size, activeLine: 5 }, code, `Novo topo: ${this._topLabel()}.`);
         return value;
     }
 
@@ -88,14 +92,14 @@ class ManualStack {
         const code = `public T peek() {\n    if (size == 0) return null;\n    return array[size - 1];\n}`;
 
         if (this.size === 0) {
-            this._addStep('ERROR', {}, code, 'Pilha vazia.');
+            this._addStep('ERROR', { activeLine: 2 }, code, 'Pilha vazia.');
             return null;
         }
 
         const index = this.size - 1;
         const value = this.data[index];
-        this._addStep('ARRAY_DIRECT_ACCESS', { index, isSuccess: true }, code, `Peek no topo (indice ${index}) retornou ${value}.`);
-        this._addStep('UPDATE_STATE', { head: '-', tail: this._topLabel(), size: this.size }, code, `Topo permanece em ${this._topLabel()}.`);
+        this._addStep('ARRAY_DIRECT_ACCESS', { index, isSuccess: true, activeLine: 3 }, code, `Peek no topo (indice ${index}) retornou ${value}.`);
+        this._addStep('UPDATE_STATE', { head: '-', tail: this._topLabel(), size: this.size, activeLine: 3 }, code, `Topo permanece em ${this._topLabel()}.`);
         return value;
     }
 

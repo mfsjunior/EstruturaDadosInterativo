@@ -31,6 +31,9 @@ class GraphModule extends BaseModule {
             globals.complexityPanel
         );
         this.animationController = new AnimationController(this.stepExecutor);
+        
+        this.initDebugEngine('graph');
+        
         this.graph = new GraphAdjacencyList(7);
         this.operationPanel = new GraphOperationPanel(this);
         this._bindPlaybackControls();
@@ -51,6 +54,10 @@ class GraphModule extends BaseModule {
             this.animationController.pause();
             this.animationController = null;
         }
+        if (this.debugEngine) {
+            this.debugEngine.pause();
+            this.debugEngine = null;
+        }
         const nodesContainer = document.getElementById('nodesContainer');
         if (nodesContainer) {
             nodesContainer.classList.remove('graph-mode');
@@ -69,6 +76,22 @@ class GraphModule extends BaseModule {
     }
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true) {
+        if (this.appManager.activeViewTab === 'debug') {
+            const steps = this.runDebugSession(
+                methodName, 
+                args, 
+                'graph', 
+                () => this.graph[methodName](...args), 
+                () => this.graph.getSteps()
+            );
+            
+            const globals = this.appManager.getGlobals();
+            globals.callStackPanel.reset();
+            globals.callStackPanel.push(methodName + '(' + args.join(', ') + ')');
+            globals.timelinePanel.setSteps(steps);
+            return;
+        }
+
         autoPlay = false;
         if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
             this.animationController.fastForward();
@@ -145,9 +168,12 @@ class GraphModule extends BaseModule {
     }
 
     resetSystem() {
-        this.animationController.pause();
-        this.animationController.setResetHandler(null);
-        this.animationController.setSteps([]);
+        if (this.animationController) {
+            this.animationController.pause();
+            this.animationController.setResetHandler(null);
+            this.animationController.setSteps([]);
+        }
+        if (this.debugEngine) this.debugEngine.pause();
         this.graph = new GraphAdjacencyList(7);
         this.graphRenderer.initFromSnapshot(this.graph._snapshot());
         this.stepExecutor.clear();
@@ -183,6 +209,16 @@ class GraphModule extends BaseModule {
 
     _bindPlaybackControls() {
         this._handlePlayPause = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                if (this.debugEngine.isPlaying) {
+                    this.debugEngine.pause();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                } else {
+                    this.debugEngine.play();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x23F8);
+                }
+                return;
+            }
             if (this.animationController.isPlaying) {
                 this.animationController.pause();
                 document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -194,26 +230,62 @@ class GraphModule extends BaseModule {
         document.getElementById('btnPlayPause').addEventListener('click', this._handlePlayPause);
 
         this._handleFastForward = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.finish();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.animationController.fastForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnFastForward').addEventListener('click', this._handleFastForward);
 
         this._handleNextStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.next();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.animationController.pause();
             this.animationController.stepForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnNextStep').addEventListener('click', this._handleNextStep);
 
+        this._handlePrevStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.previous();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
+            this.animationController.pause();
+            document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+        };
+        const btnPrevStep = document.getElementById('btnPrevStep');
+        if (btnPrevStep) {
+            btnPrevStep.addEventListener('click', this._handlePrevStep);
+        }
+
         this._handleRestart = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.reset();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.resetSystem();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnRestartAnim').addEventListener('click', this._handleRestart);
 
         this._handleSpeedSelect = (e) => {
-            this.animationController.setSpeed(parseFloat(e.target.value));
+            const val = parseFloat(e.target.value);
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine) {
+                this.debugEngine.setSpeed(val);
+            }
+            this.animationController.setSpeed(val);
         };
         document.getElementById('speedSelect').addEventListener('change', this._handleSpeedSelect);
 

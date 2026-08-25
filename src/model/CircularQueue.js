@@ -54,10 +54,12 @@ class CircularQueue {
 
     enqueue(value) {
         this._startOperation(`enqueue(${value})`);
-        const code = `public void enqueue(T value) {\n    if (size == capacity) throw new IllegalStateException();\n    array[rear] = value;\n    rear = (rear + 1) % capacity;\n    size++;\n}`;
+        const code = `public void enqueue(T value) {\n    if (size == capacity) throw new FullException();\n    array[rear] = value;\n    rear = (rear + 1) % capacity;\n    size++;\n}`;
+
+        this._addStep('STEP', { activeLine: 2 }, code, `Verificando se a fila esta cheia (size == capacity).`);
 
         if (this.size === this.capacity) {
-            this._addStep('ERROR', {}, code, 'Fila circular cheia. Nao foi possivel inserir.');
+            this._addStep('ERROR', { activeLine: 2 }, code, 'Fila circular cheia. Nao foi possivel inserir.');
             return;
         }
 
@@ -66,22 +68,24 @@ class CircularQueue {
         this.rear = (this.rear + 1) % this.capacity;
         this.size++;
 
-        this._addStep('ARRAY_INSERT', { index, value, size: this.size }, code, `Enqueue de ${value} na posicao circular ${index}.`);
-        this._addStep('UPDATE_STATE', this._statePayload(), code, 'Ponteiros front/rear atualizados.');
+        this._addStep('ARRAY_INSERT', { index, value, size: this.size, activeLine: 3 }, code, `Enqueue de ${value} na posicao circular ${index}.`);
+        this._addStep('UPDATE_STATE', { ...this._statePayload(), activeLine: 4 }, code, 'Ponteiros front/rear atualizados.');
     }
 
     dequeue() {
         this._startOperation('dequeue()');
         const code = `public T dequeue() {\n    if (size == 0) return null;\n    T value = array[front];\n    array[front] = null;\n    front = (front + 1) % capacity;\n    size--;\n    return value;\n}`;
 
+        this._addStep('STEP', { activeLine: 2 }, code, `Verificando se a fila esta vazia (size == 0).`);
+
         if (this.size === 0) {
-            this._addStep('ERROR', {}, code, 'Fila circular vazia.');
+            this._addStep('ERROR', { activeLine: 2 }, code, 'Fila circular vazia.');
             return null;
         }
 
         const index = this.front;
         const value = this.data[index];
-        this._addStep('ARRAY_DIRECT_ACCESS', { index }, code, `Lendo frente da fila no indice ${index}.`);
+        this._addStep('ARRAY_DIRECT_ACCESS', { index, activeLine: 3 }, code, `Lendo frente da fila no indice ${index}.`);
 
         this.data[index] = undefined;
         this.front = (this.front + 1) % this.capacity;
@@ -91,8 +95,8 @@ class CircularQueue {
             this.rear = 0;
         }
 
-        this._addStep('ARRAY_REMOVE_END', { index, size: this.size }, code, `Dequeue removeu ${value} da frente.`);
-        this._addStep('UPDATE_STATE', this._statePayload(), code, 'Ponteiros front/rear atualizados.');
+        this._addStep('ARRAY_REMOVE_END', { index, size: this.size, activeLine: 4 }, code, `Dequeue removeu ${value} da frente.`);
+        this._addStep('UPDATE_STATE', { ...this._statePayload(), activeLine: 5 }, code, 'Ponteiros front/rear atualizados.');
         return value;
     }
 
@@ -101,14 +105,14 @@ class CircularQueue {
         const code = `public T peek() {\n    if (size == 0) return null;\n    return array[front];\n}`;
 
         if (this.size === 0) {
-            this._addStep('ERROR', {}, code, 'Fila circular vazia.');
+            this._addStep('ERROR', { activeLine: 2 }, code, 'Fila circular vazia.');
             return null;
         }
 
         const index = this.front;
         const value = this.data[index];
-        this._addStep('ARRAY_DIRECT_ACCESS', { index }, code, `Peek da fila retornou ${value} no indice ${index}.`);
-        this._addStep('UPDATE_STATE', this._statePayload(), code, 'Ponteiros preservados.');
+        this._addStep('ARRAY_DIRECT_ACCESS', { index, isSuccess: true, activeLine: 3 }, code, `Peek (frente) retornou ${value} no indice ${index}.`);
+        this._addStep('UPDATE_STATE', { ...this._statePayload(), activeLine: 3 }, code, 'Estado da fila circular inalterado.');
         return value;
     }
 

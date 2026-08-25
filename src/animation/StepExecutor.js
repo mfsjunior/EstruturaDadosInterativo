@@ -235,7 +235,7 @@ class StepExecutor {
             case 'INFO':
                 if (!isFast && step.data && step.data.target) {
                     const baseText = this.codeHighlighter.lastActiveLineText || (step.description || '').replace(/<[^>]+>/g, '');
-                    const isSuccess = step.data.isSuccess || String(baseText).match(/encontrado no (indice|índice)/i);
+                    const isSuccess = step.data.isSuccess || String(baseText).match(/(encontrado no (indice|índice)|peek no topo|pop removeu)/i);
                     this.nodeRenderer.highlightNode(step.data.target, !!isSuccess);
                 }
                 break;

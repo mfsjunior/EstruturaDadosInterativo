@@ -28,7 +28,7 @@ class StackModule extends BaseModule {
                 vizCard.classList.remove('queue-viz-card');
             }
         }
-        this.arrayRenderer.init(8, 0x2000, 4);
+        this.arrayRenderer.init(6, 0x2000, 4);
 
         this.stepExecutor = new ArrayStepExecutor(
             this.arrayRenderer,
@@ -39,45 +39,9 @@ class StackModule extends BaseModule {
         );
         this.animationController = new AnimationController(this.stepExecutor);
 
-        this.debugEngine = new AlgorithmExecutionEngine({
-            onApply: (event, isFast) => {
-                const step = event.rawStep;
-                if (!step) return;
-                step.__algorithmEvent = event;
-                if (isFast) this.stepExecutor.executeFast(step);
-                else this.stepExecutor.execute(step);
+        this.initDebugEngine('stack');
 
-                const globalsInner = this.appManager.getGlobals();
-                if (globalsInner.algorithmDebugPanel) {
-                    const index = Number.isInteger(event.variables?.index)
-                        ? event.variables.index
-                        : (Number.isInteger(event.variables?.to) ? event.variables.to : null);
-                    globalsInner.algorithmDebugPanel.renderEvent(event, {
-                        structureType: 'stack',
-                        arrayState: event.afterState || event.variables?.arrayState || null,
-                        focusIndex: index,
-                        metrics: {
-                            visitedNodes: 0,
-                            queueOps: 0,
-                            comparisons: 0,
-                        },
-                    });
-                }
-            },
-            onReset: () => {
-                this.stepExecutor.restoreSnapshot(this.debugBaseline || this._captureSnapshot());
-            },
-            onProgress: (currentIndex, total, lastEvent) => {
-                const counter = document.getElementById('stepCounter');
-                if (counter) counter.textContent = `${currentIndex}/${total}`;
-                const globalsInner = this.appManager.getGlobals();
-                if (globalsInner.algorithmDebugPanel) {
-                    globalsInner.algorithmDebugPanel.onProgress(currentIndex, total, lastEvent);
-                }
-            },
-        });
-
-        this.stack = new ManualStack(8);
+        this.stack = new ManualStack(6);
         this.operationPanel = new StackOperationPanel(this);
 
         this._bindPlaybackControls();
@@ -86,7 +50,7 @@ class StackModule extends BaseModule {
         globals.statePanel.updateProp('size', 0);
         globals.statePanel.updateProp('head', '-');
         globals.statePanel.updateProp('tail', '-');
-        globals.consolePanel.log('Pilha LIFO inicializada. Capacidade: 8.');
+        globals.consolePanel.log('Pilha LIFO inicializada. Capacidade: 6.');
         globals.callStackPanel.reset();
         globals.localVarsPanel.clear();
         globals.timelinePanel.clear();
@@ -126,6 +90,22 @@ class StackModule extends BaseModule {
     }
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true) {
+        if (this.appManager.activeViewTab === 'debug') {
+            const steps = this.runDebugSession(
+                methodName, 
+                args, 
+                'stack', 
+                () => this.stack[methodName](...args), 
+                () => this.stack.getSteps()
+            );
+            
+            const globals = this.appManager.getGlobals();
+            globals.callStackPanel.reset();
+            globals.callStackPanel.push(methodName + '(' + args.join(', ') + ')');
+            globals.timelinePanel.setSteps(steps);
+            return;
+        }
+
         if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
             this.animationController.fastForward();
         }
@@ -168,11 +148,6 @@ class StackModule extends BaseModule {
                 this._primePausedOperation(methodName);
             }
             if (playBtn) playBtn.textContent = String.fromCodePoint(0x25B6);
-        }
-
-        if (this.debugEngine) {
-            this.debugBaseline = baseline;
-            this.debugEngine.loadSteps(steps);
         }
     }
 
@@ -221,6 +196,14 @@ class StackModule extends BaseModule {
 
     _bindPlaybackControls() {
         this._handlePlayPause = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                if (this.debugEngine.isPlaying) {
+                    this.debugEngine.pause();
+                } else {
+                    this.debugEngine.play();
+                }
+                return;
+            }
             if (this.animationController.isPlaying) {
                 this.animationController.pause();
                 document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -232,25 +215,58 @@ class StackModule extends BaseModule {
         document.getElementById('btnPlayPause').addEventListener('click', this._handlePlayPause);
 
         this._handleFastForward = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.finish();
+                return;
+            }
             this.animationController.fastForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnFastForward').addEventListener('click', this._handleFastForward);
 
         this._handleNextStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.next();
+                return;
+            }
             this.animationController.pause();
             this.animationController.stepForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnNextStep').addEventListener('click', this._handleNextStep);
+        
+        this._handlePrevStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.previous();
+                return;
+            }
+            this.animationController.pause();
+            document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+        };
+        const btnPrevStep = document.getElementById('btnPrevStep');
+        if (btnPrevStep) {
+            btnPrevStep.addEventListener('click', this._handlePrevStep);
+        }
 
         this._handleRestart = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.reset();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.resetSystem();
         };
         document.getElementById('btnRestartAnim').addEventListener('click', this._handleRestart);
 
         this._handleSpeedSelect = (e) => {
-            this.animationController.setSpeed(parseFloat(e.target.value));
+            const val = parseFloat(e.target.value);
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine) {
+                this.debugEngine.setSpeed(val);
+            }
+            this.animationController.setSpeed(val);
         };
         document.getElementById('speedSelect').addEventListener('change', this._handleSpeedSelect);
 
@@ -281,8 +297,8 @@ class StackModule extends BaseModule {
         if (this.debugEngine) this.debugEngine.pause();
         this.animationController.setResetHandler(null);
         this.animationController.setSteps([]);
-        this.stack = new ManualStack(8);
-        this.arrayRenderer.init(8, 0x2000, 4);
+        this.stack = new ManualStack(6);
+        this.arrayRenderer.init(6, 0x2000, 4);
         this.stepExecutor.clear();
         const globals = this.appManager.getGlobals();
         globals.statePanel.updateProp('size', 0);

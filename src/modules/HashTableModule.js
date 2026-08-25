@@ -41,6 +41,8 @@ class HashTableModule extends BaseModule {
         );
         this.animationController = new AnimationController(this.stepExecutor);
 
+        this.initDebugEngine('hash');
+
         this.hashTable = new HashTable(11);
         this.operationPanel = new HashTableOperationPanel(this);
         this._bindPlaybackControls();
@@ -64,6 +66,10 @@ class HashTableModule extends BaseModule {
             this.animationController.pause();
             this.animationController = null;
         }
+        if (this.debugEngine) {
+            this.debugEngine.pause();
+            this.debugEngine = null;
+        }
         if (this.arrayRenderer?.container) {
             this.arrayRenderer.container.classList.remove('array-mode', 'hash-mode');
         }
@@ -85,6 +91,25 @@ class HashTableModule extends BaseModule {
     }
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true, options = {}) {
+        if (this.appManager.activeViewTab === 'debug') {
+            const steps = this.runDebugSession(
+                methodName, 
+                args, 
+                'hash', 
+                () => this.hashTable[methodName](...args), 
+                () => this.hashTable.getSteps()
+            );
+            
+            const globals = this.appManager.getGlobals();
+            globals.callStackPanel.reset();
+            globals.callStackPanel.push(methodName + '(' + args.join(', ') + ')');
+            globals.timelinePanel.setSteps(steps);
+            
+            const baseline = this._captureSnapshot();
+            this._applyProbeHighlights(steps[steps.length - 1]);
+            return;
+        }
+
         autoPlay = false;
         if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
             this.animationController.fastForward();
@@ -224,6 +249,16 @@ class HashTableModule extends BaseModule {
 
     _bindPlaybackControls() {
         this._handlePlayPause = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                if (this.debugEngine.isPlaying) {
+                    this.debugEngine.pause();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                } else {
+                    this.debugEngine.play();
+                    document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x23F8);
+                }
+                return;
+            }
             if (this.animationController.isPlaying) {
                 this.animationController.pause();
                 document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -235,24 +270,61 @@ class HashTableModule extends BaseModule {
         document.getElementById('btnPlayPause').addEventListener('click', this._handlePlayPause);
 
         this._handleFastForward = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.finish();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.animationController.fastForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnFastForward').addEventListener('click', this._handleFastForward);
 
         this._handleNextStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.next();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.animationController.pause();
             this.animationController.stepForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnNextStep').addEventListener('click', this._handleNextStep);
 
-        this._handleRestart = () => {
+        this._handlePrevStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.previous();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.animationController.pause();
-            this.animationController.setResetHandler(null);
-            this.animationController.setSteps([]);
+            document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+        };
+        const btnPrevStep = document.getElementById('btnPrevStep');
+        if (btnPrevStep) {
+            btnPrevStep.addEventListener('click', this._handlePrevStep);
+        }
+
+        this._handleRestart = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.reset();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
+            if (this.animationController) {
+                this.animationController.pause();
+                this.animationController.setResetHandler(null);
+                this.animationController.setSteps([]);
+            }
+            if (this.debugEngine) this.debugEngine.pause();
+            
             this.hashTable = new HashTable(11);
             this.arrayRenderer.init(11, 0x5000, 4);
+            this.arrayRenderer.clearCustomHighlights();
             this.stepExecutor.clear();
             const globals = this.appManager.getGlobals();
             globals.statePanel.updateProp('size', 0);
@@ -277,7 +349,11 @@ class HashTableModule extends BaseModule {
         document.getElementById('btnRestartAnim').addEventListener('click', this._handleRestart);
 
         this._handleSpeedSelect = (e) => {
-            this.animationController.setSpeed(parseFloat(e.target.value));
+            const val = parseFloat(e.target.value);
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine) {
+                this.debugEngine.setSpeed(val);
+            }
+            this.animationController.setSpeed(val);
         };
         document.getElementById('speedSelect').addEventListener('change', this._handleSpeedSelect);
 

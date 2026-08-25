@@ -73,14 +73,27 @@ class AlgorithmExecutionEngine {
     play() {
         if (!this.events.length) return;
         this.isPlaying = true;
+        this._updatePlayButtons();
         this._schedule();
     }
 
     pause() {
         this.isPlaying = false;
+        this._updatePlayButtons();
         if (this.timer) {
             clearTimeout(this.timer);
             this.timer = null;
+        }
+    }
+
+    _updatePlayButtons() {
+        const btnMain = document.getElementById('btnPlayPause');
+        const btnDebug = document.getElementById('btnDebugPlay');
+        if (btnMain) {
+            btnMain.textContent = this.isPlaying ? String.fromCodePoint(0x23F8) : String.fromCodePoint(0x25B6);
+        }
+        if (btnDebug) {
+            btnDebug.textContent = this.isPlaying ? '\u23F8 Pause' : '\u25B6 Play';
         }
     }
 

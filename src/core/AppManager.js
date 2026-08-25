@@ -532,7 +532,7 @@ class AppManager {
         const timelineCard = document.querySelector('.timeline-card');
 
         if (debugCard) {
-            const supportsDebug = ['Array', 'LinkedList', 'BST', 'AVL', 'RedBlack', 'Trie', 'Graph'].includes(this.activeModuleId);
+            const supportsDebug = true; // All modules now support debug view
             const showDebug = isDebugView && supportsDebug;
             debugCard.classList.toggle('hidden', !showDebug);
             if (timelineCard) timelineCard.classList.toggle('hidden', showDebug);
@@ -548,11 +548,22 @@ class AppManager {
             const arrowsCanvas = document.getElementById('arrowsCanvas');
 
             if (showDebug) {
-                if (this.activeModuleId === 'LinkedList') {
+                const usesMainStructure = ['LinkedList', 'Array', 'Stack', 'CircularQueue', 'Deque', 'HashTable', 'FenwickTree', 'UnionFind', 'Graph'];
+                if (usesMainStructure.includes(this.activeModuleId)) {
                     const debugTreePreview = document.getElementById('debugTreePreview');
                     if (debugTreePreview && nodesContainer && arrowsCanvas) {
                         debugTreePreview.appendChild(nodesContainer);
                         debugTreePreview.appendChild(arrowsCanvas);
+                    }
+                }
+                const usesHeapTree = ['BST', 'AVL', 'RedBlack', 'Trie', 'PriorityHeap'];
+                if (usesHeapTree.includes(this.activeModuleId)) {
+                    const debugTreePreview = document.getElementById('debugTreePreview');
+                    const heapTreePreview = document.getElementById('heapTreePreview');
+                    if (debugTreePreview && heapTreePreview) {
+                        while (heapTreePreview.firstChild) {
+                            debugTreePreview.appendChild(heapTreePreview.firstChild);
+                        }
                     }
                 }
                 const sidebar = document.querySelector('.left-sidebar');
@@ -560,10 +571,24 @@ class AppManager {
                     sidebar.classList.remove('collapsed');
                 }
             } else {
-                const logicalView = document.getElementById('logicalView');
-                if (logicalView && nodesContainer && arrowsCanvas) {
-                    logicalView.appendChild(nodesContainer);
-                    logicalView.appendChild(arrowsCanvas);
+                const usesMainStructure = ['LinkedList', 'Array', 'Stack', 'CircularQueue', 'Deque', 'HashTable', 'FenwickTree', 'UnionFind', 'Graph'];
+                if (usesMainStructure.includes(this.activeModuleId)) {
+                    const logicalView = document.getElementById('logicalView');
+                    if (logicalView && nodesContainer && arrowsCanvas) {
+                        logicalView.appendChild(nodesContainer);
+                        logicalView.appendChild(arrowsCanvas);
+                    }
+                }
+                const usesHeapTree = ['BST', 'AVL', 'RedBlack', 'Trie', 'PriorityHeap'];
+                if (usesHeapTree.includes(this.activeModuleId)) {
+                    const debugTreePreview = document.getElementById('debugTreePreview');
+                    const heapTreePreview = document.getElementById('heapTreePreview');
+                    if (debugTreePreview && heapTreePreview) {
+                        // Only move back if debugTreePreview has children (not empty)
+                        while (debugTreePreview.firstChild) {
+                            heapTreePreview.appendChild(debugTreePreview.firstChild);
+                        }
+                    }
                 }
             }
         } else if (timelineCard) {

@@ -212,7 +212,6 @@ class ArrayStepExecutor {
         const matcher = matcherByType[step?.type];
         if (!matcher) return raw;
 
-        const lines = raw.split('\n');
         const targetIndex = lines.findIndex((line) => matcher.test(line));
         if (targetIndex < 0) return raw;
 

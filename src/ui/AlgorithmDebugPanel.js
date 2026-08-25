@@ -220,11 +220,7 @@ class AlgorithmDebugPanel {
         this.previewMode = String(modeLabel || '').includes('ARRAY') ? 'array' : (String(modeLabel || '').includes('LINKED') ? 'linked_list' : 'tree');
         this._syncQuickOpsVisibility(this.previewMode === 'array');
 
-        if (this.previewMode === 'tree') {
-            if (this.treeRenderer && typeof this.treeRenderer.clear === 'function') {
-                this.treeRenderer.clear();
-            }
-        } else if (this.previewMode === 'array') {
+        if (this.previewMode === 'array') {
             const host = document.getElementById(this.treeHostId);
             if (host) {
                 host.classList.add('array-mode');
@@ -261,13 +257,8 @@ class AlgorithmDebugPanel {
 
         const structureType = context.structureType || (this.previewMode === 'array' ? 'array' : (this.previewMode === 'linked_list' ? 'linked_list' : 'tree'));
         const tree = context.tree || null;
-        if (structureType === 'tree') {
-            if (tree && this.treeRenderer) {
-                this.treeRenderer.render(tree, context.focusNodeId || null, context.focusEdge || null);
-            }
-        } else if (structureType === 'array') {
-            this._renderArrayPreview(context.arrayState || event?.variables?.arrayState || null, context.focusIndex);
-        }
+        // The visual components (nodesContainer, etc) are now securely moved by AppManager
+        // into the debug preview, so we don't need to manually render trees or arrays here.
 
         if (this.el.event) this.el.event.textContent = `${event.type} | Linha ${event.lineNumber || '-'} | ${event.description || '-'}`;
         if (this.el.why) this.el.why.textContent = event.why || event.description || 'Sem explicacao.';
@@ -390,7 +381,7 @@ class AlgorithmDebugPanel {
         if (!this.el.code) return;
 
         const raw = String(event?.rawStep?.codeLine || '');
-        const activeLine = Number.isInteger(event?.lineNumber)
+        let activeLine = Number.isInteger(event?.lineNumber)
             ? event.lineNumber
             : (Number.isInteger(event?.rawStep?.data?.activeLine) ? event.rawStep.data.activeLine : null);
         const validationProbe = this._buildValidationProbe(event);
@@ -416,16 +407,33 @@ class AlgorithmDebugPanel {
         };
 
         const lines = raw.replace(/\r\n/g, '\n').split('\n');
+        
+        if (activeLine === null) {
+            let activeIndex = lines.findIndex((line) => line.includes('<---'));
+            if (activeIndex === -1) {
+                for (let i = lines.length - 1; i >= 0; i--) {
+                    if (lines[i].trim() && !lines[i].trim().startsWith('//') && lines[i].trim() !== '}' && lines[i].trim() !== '{') {
+                        activeIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (activeIndex >= 0) {
+                activeLine = activeIndex + 1;
+            }
+        }
+
         this.el.code.innerHTML = lines.map((line, idx) => {
             const lineNo = idx + 1;
             const isActive = activeLine === lineNo;
+            const cleanLine = line.replace(/\/\/\s*<---.*$/, '').replace(/<---.*$/, '');
             const probeInline = isActive && validationProbe
                 ? `<span class="code-line-probe"> // ${escapeHtml(validationProbe)}</span>`
                 : '';
             return `<div class="code-line${isActive ? ' active-line' : ''}">`
-            + `<span class="code-line-marker">${isActive ? '>' : ''}</span>`
+            + `<span class="code-line-marker">${isActive ? '\u25B6' : ''}</span>`
                 + `<span class="code-line-number">${lineNo}</span>`
-                + `<span class="code-line-text">${tokenize(line)}${probeInline}</span>`
+                + `<span class="code-line-text">${tokenize(cleanLine)}${probeInline}</span>`
                 + `</div>`;
         }).join('');
 

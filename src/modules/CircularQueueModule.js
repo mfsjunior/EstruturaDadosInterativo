@@ -38,43 +38,7 @@ class CircularQueueModule extends BaseModule {
         );
         this.animationController = new AnimationController(this.stepExecutor);
 
-        this.debugEngine = new AlgorithmExecutionEngine({
-            onApply: (event, isFast) => {
-                const step = event.rawStep;
-                if (!step) return;
-                step.__algorithmEvent = event;
-                if (isFast) this.stepExecutor.executeFast(step);
-                else this.stepExecutor.execute(step);
-
-                const globalsInner = this.appManager.getGlobals();
-                if (globalsInner.algorithmDebugPanel) {
-                    const index = Number.isInteger(event.variables?.index)
-                        ? event.variables.index
-                        : (Number.isInteger(event.variables?.to) ? event.variables.to : null);
-                    globalsInner.algorithmDebugPanel.renderEvent(event, {
-                        structureType: 'queue',
-                        arrayState: event.afterState || event.variables?.arrayState || null,
-                        focusIndex: index,
-                        metrics: {
-                            visitedNodes: 0,
-                            queueOps: 0,
-                            comparisons: 0,
-                        },
-                    });
-                }
-            },
-            onReset: () => {
-                this.stepExecutor.restoreSnapshot(this.debugBaseline || this._captureSnapshot());
-            },
-            onProgress: (currentIndex, total, lastEvent) => {
-                const counter = document.getElementById('stepCounter');
-                if (counter) counter.textContent = `${currentIndex}/${total}`;
-                const globalsInner = this.appManager.getGlobals();
-                if (globalsInner.algorithmDebugPanel) {
-                    globalsInner.algorithmDebugPanel.onProgress(currentIndex, total, lastEvent);
-                }
-            },
-        });
+        this.initDebugEngine('queue');
 
         this.queue = new CircularQueue(8);
         this.operationPanel = new CircularQueueOperationPanel(this);
@@ -125,6 +89,22 @@ class CircularQueueModule extends BaseModule {
     }
 
     executeOperation(methodName, args = [], silent = false, autoPlay = true) {
+        if (this.appManager.activeViewTab === 'debug') {
+            const steps = this.runDebugSession(
+                methodName, 
+                args, 
+                'queue', 
+                () => this.queue[methodName](...args), 
+                () => this.queue.getSteps()
+            );
+            
+            const globals = this.appManager.getGlobals();
+            globals.callStackPanel.reset();
+            globals.callStackPanel.push(methodName + '(' + args.join(', ') + ')');
+            globals.timelinePanel.setSteps(steps);
+            return;
+        }
+
         autoPlay = false;
         if (this.animationController.isPlaying || this.animationController.hasPendingSteps()) {
             this.animationController.fastForward();
@@ -168,11 +148,6 @@ class CircularQueueModule extends BaseModule {
                 this._primePausedOperation(methodName);
             }
             if (playBtn) playBtn.textContent = String.fromCodePoint(0x25B6);
-        }
-
-        if (this.debugEngine) {
-            this.debugBaseline = baseline;
-            this.debugEngine.loadSteps(steps);
         }
     }
 
@@ -227,6 +202,14 @@ class CircularQueueModule extends BaseModule {
 
     _bindPlaybackControls() {
         this._handlePlayPause = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                if (this.debugEngine.isPlaying) {
+                    this.debugEngine.pause();
+                } else {
+                    this.debugEngine.play();
+                }
+                return;
+            }
             if (this.animationController.isPlaying) {
                 this.animationController.pause();
                 document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
@@ -238,19 +221,48 @@ class CircularQueueModule extends BaseModule {
         document.getElementById('btnPlayPause').addEventListener('click', this._handlePlayPause);
 
         this._handleFastForward = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.finish();
+                return;
+            }
             this.animationController.fastForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnFastForward').addEventListener('click', this._handleFastForward);
 
         this._handleNextStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.next();
+                return;
+            }
             this.animationController.pause();
             this.animationController.stepForward();
             document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
         };
         document.getElementById('btnNextStep').addEventListener('click', this._handleNextStep);
 
+        this._handlePrevStep = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.previous();
+                return;
+            }
+            this.animationController.pause();
+            document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+        };
+        const btnPrevStep = document.getElementById('btnPrevStep');
+        if (btnPrevStep) {
+            btnPrevStep.addEventListener('click', this._handlePrevStep);
+        }
+
         this._handleRestart = () => {
+            if (this.appManager.activeViewTab === 'debug' && this.debugEngine && this.debugEngine.events.length) {
+                this.debugEngine.pause();
+                this.debugEngine.reset();
+                document.getElementById('btnPlayPause').textContent = String.fromCodePoint(0x25B6);
+                return;
+            }
             this.animationController.pause();
             this.animationController.setResetHandler(null);
             this.animationController.setSteps([]);
