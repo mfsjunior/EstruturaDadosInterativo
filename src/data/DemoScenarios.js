@@ -30,7 +30,7 @@ window.DemoScenarios = {
 		},
 		{
 			id: 'cq-peek',
-			label: 'Peek no Frente',
+			label: 'Preencher e Espiar Frente',
 			operations: [
 				{ method: 'enqueue', args: [77] },
 				{ method: 'enqueue', args: [88] },
