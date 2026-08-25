@@ -48,8 +48,13 @@ class AlgorithmExecutionEngine {
         this._resetVisualState();
         this.currentIndex = 0;
 
-        for (let i = 0; i < target; i += 1) {
+        for (let i = 0; i < target - 1; i += 1) {
             this._applyAt(i, true);
+            this.currentIndex += 1;
+        }
+
+        if (target > 0) {
+            this._applyAt(target - 1, false);
             this.currentIndex += 1;
         }
 
@@ -62,8 +67,13 @@ class AlgorithmExecutionEngine {
         this._resetVisualState();
         this.currentIndex = 0;
 
-        for (let i = 0; i < bounded; i += 1) {
+        for (let i = 0; i < bounded - 1; i += 1) {
             this._applyAt(i, true);
+            this.currentIndex += 1;
+        }
+        
+        if (bounded > 0) {
+            this._applyAt(bounded - 1, false);
             this.currentIndex += 1;
         }
 
