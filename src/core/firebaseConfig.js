@@ -5,5 +5,6 @@ window.FIREBASE_CONFIG = {
     projectId: "ed-interativo",
     storageBucket: "ed-interativo.firebasestorage.app",
     messagingSenderId: "717912984112",
-    appId: "1:717912984112:web:002506905a79a95fe3fbf5"
+    appId: "1:717912984112:web:002506905a79a95fe3fbf5",
+    measurementId: "G-6MYZEH5YJJ"
 };

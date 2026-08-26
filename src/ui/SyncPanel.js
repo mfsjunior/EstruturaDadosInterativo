@@ -15,7 +15,7 @@ class SyncPanel {
     _buildUI() {
         this.container = document.createElement('div');
         this.container.id = 'syncPanel';
-        this.container.className = 'sync-panel collapsed';
+        this.container.className = 'sync-panel';
         
         this.container.innerHTML = `
             <div class="sync-header">
@@ -24,7 +24,7 @@ class SyncPanel {
             </div>
             <div class="sync-content">
                 <div class="sync-actions" style="margin-top: 5px;">
-                     <button id="btnLogin" class="action-btn secondary" style="margin-right:5px;">Login Professor</button>
+                     <button id="btnLogin" type="button" class="action-btn secondary" style="margin-right:5px;">Login Professor</button>
                      <button id="btnHostRoom" class="action-btn primary" disabled>Iniciar Aula (Tomar Controle)</button>
                 </div>
                 <div class="sync-status" id="syncStatusText">Aguardando Professor...</div>
@@ -33,11 +33,17 @@ class SyncPanel {
         `;
         
         document.body.appendChild(this.container);
+        console.log('SyncPanel UI built');
 
         // Bind events
         document.getElementById('btnToggleSync').addEventListener('click', () => this.container.classList.toggle('collapsed'));
 
         // Helper: Google Sign‑In for professor authentication
+        if (!window.firebase) {
+            console.error('Firebase SDK not loaded. Check script imports.');
+            alert('Firebase SDK not loaded. Cannot authenticate.');
+            return;
+        }
         const AUTHORIZED_PROFESSOR_EMAIL = 'professor@example.com';
         this._requireProfessorAuth = () => {
             // If already authorized in this session, enable host button
@@ -65,23 +71,32 @@ class SyncPanel {
             return false;
         };
 
-        // Login button triggers auth flow
-        document.getElementById('btnLogin').addEventListener('click', () => {
-            console.log('Login button clicked');
-            this._requireProfessorAuth();
-        });
+        // Attach event listeners with safety checks
+        const loginBtn = document.getElementById('btnLogin');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                console.log('Login button clicked');
+                this._requireProfessorAuth();
+            });
+        } else {
+            console.warn('Login button (btnLogin) not found in DOM');
+        }
 
-        document.getElementById('btnHostRoom').addEventListener('click', () => {
-            console.log('Host button clicked');
-            // Host button is enabled only after successful auth
-            if (sessionStorage.getItem('professorAuth') === 'true') {
-                console.log('Auth verified, hosting room');
-                this.syncManager.hostRoom('global_class');
-                this._toggleMode(true);
-            } else {
-                alert('Faça login como professor antes de iniciar a aula.');
-            }
-        });
+        const hostBtn = document.getElementById('btnHostRoom');
+        if (hostBtn) {
+            hostBtn.addEventListener('click', () => {
+                console.log('Host button clicked');
+                if (sessionStorage.getItem('professorAuth') === 'true') {
+                    console.log('Auth verified, hosting room');
+                    this.syncManager.hostRoom('global_class');
+                    this._toggleMode(true);
+                } else {
+                    alert('Faça login como professor antes de iniciar a aula.');
+                }
+            });
+        } else {
+            console.warn('Host button (btnHostRoom) not found in DOM');
+        }
 
         document.getElementById('btnLeaveRoom').addEventListener('click', () => {
             this.syncManager.leaveRoom();
