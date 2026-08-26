@@ -24,7 +24,8 @@ class SyncPanel {
             </div>
             <div class="sync-content">
                 <div class="sync-actions" style="margin-top: 5px;">
-                    <button id="btnHostRoom" class="action-btn primary">Iniciar Aula (Tomar Controle)</button>
+                     <button id="btnLogin" class="action-btn secondary" style="margin-right:5px;">Login Professor</button>
+                     <button id="btnHostRoom" class="action-btn primary" disabled>Iniciar Aula (Tomar Controle)</button>
                 </div>
                 <div class="sync-status" id="syncStatusText">Aguardando Professor...</div>
                 <button id="btnLeaveRoom" class="action-btn danger hidden">Encerrar / Sair</button>
@@ -34,17 +35,51 @@ class SyncPanel {
         document.body.appendChild(this.container);
 
         // Bind events
-        document.getElementById('btnToggleSync').addEventListener('click', () => {
-            this.container.classList.toggle('collapsed');
+        document.getElementById('btnToggleSync').addEventListener('click', () => this.container.classList.toggle('collapsed'));
+
+        // Helper: Google Sign‑In for professor authentication
+        const AUTHORIZED_PROFESSOR_EMAIL = 'professor@example.com';
+        this._requireProfessorAuth = () => {
+            // If already authorized in this session, enable host button
+            if (sessionStorage.getItem('professorAuth') === 'true') {
+                document.getElementById('btnHostRoom').disabled = false;
+                return true;
+            }
+            // Trigger Google Sign‑In
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then((result) => {
+                const user = result.user;
+                if (user && user.email === AUTHORIZED_PROFESSOR_EMAIL) {
+                    sessionStorage.setItem('professorAuth', 'true');
+                    document.getElementById('btnHostRoom').disabled = false;
+                    console.log('Professor authenticated successfully');
+                } else {
+                    alert('Usuário não autorizado.');
+                    firebase.auth().signOut();
+                }
+            }).catch((error) => {
+                console.error('Auth error:', error);
+                alert('Falha ao autenticar.');
+            });
+            // Return false; click handler will verify later
+            return false;
+        };
+
+        // Login button triggers auth flow
+        document.getElementById('btnLogin').addEventListener('click', () => {
+            console.log('Login button clicked');
+            this._requireProfessorAuth();
         });
 
         document.getElementById('btnHostRoom').addEventListener('click', () => {
-            const senha = prompt("Digite a senha do professor para tomar o controle da sessão:");
-            if (senha === 'edlab' || senha === 'edlab2026') {
+            console.log('Host button clicked');
+            // Host button is enabled only after successful auth
+            if (sessionStorage.getItem('professorAuth') === 'true') {
+                console.log('Auth verified, hosting room');
                 this.syncManager.hostRoom('global_class');
                 this._toggleMode(true);
-            } else if (senha !== null) {
-                alert("Senha incorreta. Acesso negado.");
+            } else {
+                alert('Faça login como professor antes de iniciar a aula.');
             }
         });
 
