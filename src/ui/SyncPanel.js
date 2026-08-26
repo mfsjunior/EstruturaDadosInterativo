@@ -45,29 +45,34 @@ class SyncPanel {
             return;
         }
         const AUTHORIZED_PROFESSOR_EMAIL = 'professor@example.com';
+
+        // Check for redirect result on page load
+        firebase.auth().getRedirectResult().then((result) => {
+            if (result && result.user) {
+                const user = result.user;
+                if (user.email === AUTHORIZED_PROFESSOR_EMAIL) {
+                    sessionStorage.setItem('professorAuth', 'true');
+                    document.getElementById('btnHostRoom').disabled = false;
+                    console.log('Professor authenticated successfully via redirect');
+                } else {
+                    alert('Usuário não autorizado.');
+                    firebase.auth().signOut();
+                }
+            }
+        }).catch((error) => {
+            console.error('Auth error from redirect:', error);
+            alert('Falha ao autenticar.');
+        });
+
         this._requireProfessorAuth = () => {
             // If already authorized in this session, enable host button
             if (sessionStorage.getItem('professorAuth') === 'true') {
                 document.getElementById('btnHostRoom').disabled = false;
                 return true;
             }
-            // Trigger Google Sign‑In
+            // Trigger Google Sign-In with Redirect (fixes Cross-Origin-Opener-Policy on GitHub Pages)
             const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider).then((result) => {
-                const user = result.user;
-                if (user && user.email === AUTHORIZED_PROFESSOR_EMAIL) {
-                    sessionStorage.setItem('professorAuth', 'true');
-                    document.getElementById('btnHostRoom').disabled = false;
-                    console.log('Professor authenticated successfully');
-                } else {
-                    alert('Usuário não autorizado.');
-                    firebase.auth().signOut();
-                }
-            }).catch((error) => {
-                console.error('Auth error:', error);
-                alert('Falha ao autenticar.');
-            });
-            // Return false; click handler will verify later
+            firebase.auth().signInWithRedirect(provider);
             return false;
         };
 
