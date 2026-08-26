@@ -87,33 +87,44 @@ class AppManager {
         // Intercept executeOperation to broadcast automatically
         if (typeof moduleInstance.executeOperation === 'function') {
             const originalExecute = moduleInstance.executeOperation.bind(moduleInstance);
-            moduleInstance.executeOperation = (methodName, args = [], silent = false, autoPlay = true, fromNetwork = false) => {
-                if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
-                    this.syncManager.broadcastAction('EXECUTE_OPERATION', { methodName, args, autoPlay });
+            moduleInstance.executeOperation = (...args) => {
+                const isFromNetwork = this.syncManager && this.syncManager.isExecutingFromNetwork;
+                if (!isFromNetwork && this.syncManager && this.syncManager.isHost) {
+                    const methodName = args[0];
+                    const opArgs = args[1];
+                    const autoPlay = args[3] !== undefined ? args[3] : true;
+                    this.syncManager.broadcastAction('EXECUTE_OPERATION', { 
+                        methodName, 
+                        args: opArgs, 
+                        autoPlay,
+                        fullArgs: args 
+                    });
                 }
-                return originalExecute(methodName, args, silent, autoPlay, fromNetwork);
+                return originalExecute(...args);
             };
         }
 
         // Intercept runScenario
         if (typeof moduleInstance.runScenario === 'function') {
             const originalRun = moduleInstance.runScenario.bind(moduleInstance);
-            moduleInstance.runScenario = (scenarioId, fromNetwork = false) => {
-                if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
-                    this.syncManager.broadcastAction('RUN_SCENARIO', { scenarioId });
+            moduleInstance.runScenario = (...args) => {
+                const isFromNetwork = this.syncManager && this.syncManager.isExecutingFromNetwork;
+                if (!isFromNetwork && this.syncManager && this.syncManager.isHost) {
+                    this.syncManager.broadcastAction('RUN_SCENARIO', { scenarioId: args[0] });
                 }
-                return originalRun(scenarioId, fromNetwork);
+                return originalRun(...args);
             };
         }
 
         // Intercept resetSystem
         if (typeof moduleInstance.resetSystem === 'function') {
             const originalReset = moduleInstance.resetSystem.bind(moduleInstance);
-            moduleInstance.resetSystem = (fromNetwork = false) => {
-                if (!fromNetwork && this.syncManager && this.syncManager.isHost) {
+            moduleInstance.resetSystem = (...args) => {
+                const isFromNetwork = this.syncManager && this.syncManager.isExecutingFromNetwork;
+                if (!isFromNetwork && this.syncManager && this.syncManager.isHost) {
                     this.syncManager.broadcastAction('ANIM_RESTART');
                 }
-                return originalReset(fromNetwork);
+                return originalReset(...args);
             };
         }
 

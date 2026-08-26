@@ -1,24 +1,46 @@
 class SyncManager {
     constructor(appManager) {
         this.appManager = appManager;
-        this.peer = null;
-        this.connections = []; // For host to store clients
-        this.hostConnection = null; // For client to store host connection
-        
+        this.db = null;
+        this.roomRef = null;
+        this._listeners = [];
+        this._clientRef = null;
+        this._cleanupInterval = null;
+
         this.isHost = false;
         this.isClient = false;
+        this.isExecutingFromNetwork = false;
         this.roomId = null;
-        
+
         this.onStatusChange = null; // Callback for UI updates
         this._initHostCursor();
         this._initMouseTracking();
-        
-        // Clean up connection gracefully on page reload/close to free up the Room ID
+
+        // Initialize Firebase
+        this._initFirebase();
+
+        // Clean up connection gracefully on page reload/close
         window.addEventListener('beforeunload', () => {
             this.leaveRoom();
         });
     }
-    
+
+    _initFirebase() {
+        if (typeof firebase !== 'undefined' && window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== 'COLE_AQUI') {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(window.FIREBASE_CONFIG);
+                }
+                this.db = firebase.database();
+                console.log('[SyncManager] Firebase inicializado com sucesso.');
+            } catch (err) {
+                console.error('[SyncManager] Erro ao iniciar Firebase:', err);
+            }
+        } else {
+            console.warn('[SyncManager] Firebase não configurado. Abra firebaseConfig.js e preencha as credenciais.');
+        }
+    }
+
     _initHostCursor() {
         if (!document.getElementById('hostCursor')) {
             const cursor = document.createElement('div');
@@ -35,7 +57,7 @@ class SyncManager {
             cursor.style.transition = 'top 0.05s linear, left 0.05s linear';
             cursor.style.transform = 'translate(-50%, -50%)';
             cursor.style.display = 'none';
-            
+
             // Add a label
             const label = document.createElement('div');
             label.textContent = 'Professor';
@@ -50,22 +72,22 @@ class SyncManager {
             label.style.marginTop = '4px';
             label.style.fontWeight = 'bold';
             cursor.appendChild(label);
-            
+
             document.body.appendChild(cursor);
         }
     }
-    
+
     _initMouseTracking() {
         if (this._mouseListenerAdded) return;
         this._mouseListenerAdded = true;
-        
+
         let lastMove = 0;
         document.addEventListener('mousemove', (e) => {
             if (!this.isHost) return;
             const now = Date.now();
-            if (now - lastMove < 40) return; // ~25fps
+            if (now - lastMove < 80) return; // ~12fps (Firebase-friendly)
             lastMove = now;
-            
+
             this.broadcastAction('SYNC_MOUSE', {
                 x: e.clientX / window.innerWidth,
                 y: e.clientY / window.innerHeight
@@ -91,147 +113,256 @@ class SyncManager {
         console.log(`[SyncManager] Status: ${status}`);
     }
 
+    // ─────────────────────────────────────────────────────
+    //  HOST: Criar sala
+    // ─────────────────────────────────────────────────────
     hostRoom(roomId) {
         this.leaveRoom();
-        
-        // Use a unique prefix to avoid collisions on the public PeerJS server
-        const fullRoomId = `ed-interativo-${roomId}`.toLowerCase();
-        
-        // Set roomId early so auto-retry knows we are still attempting to connect
+        if (!this.db) {
+            this._updateStatus('Erro: Firebase não configurado.');
+            alert('Firebase não está configurado. Preencha o arquivo src/core/firebaseConfig.js com as credenciais do seu projeto.');
+            return;
+        }
+
         this.roomId = roomId;
+        const safeName = roomId.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+        this.roomRef = this.db.ref(`rooms/${safeName}`);
 
-        this.peer = new Peer(fullRoomId, {
-            debug: 2
-        });
-
-        this.peer.on('open', (id) => {
+        // Limpa dados antigos e cria a sala
+        this.roomRef.set({
+            hostActive: true,
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
             this.isHost = true;
             this._updateStatus(`Hospedando Sala: ${roomId}`);
-        });
 
-        this.peer.on('connection', (conn) => {
-            this.connections.push(conn);
-            this._updateStatus(`Aluno conectado (${this.connections.length} total)`);
-            
-            // Send current state to newly connected client
-            conn.on('open', () => {
-                conn.send({
-                    action: 'SYNC_STATE',
-                    payload: {
-                        activeModuleId: this.appManager.activeModuleId,
-                        isPresentationMode: this.appManager.isPresentationMode,
-                        projectorProfile: this.appManager.projectorProfile,
-                        activeViewTab: this.appManager.activeViewTab,
-                        isSidebarCollapsed: document.querySelector('.left-sidebar')?.classList.contains('collapsed')
+            // Auto-remove quando o host desconectar inesperadamente
+            this.roomRef.child('hostActive').onDisconnect().set(false);
+
+            // Gravar estado inicial para alunos que entrarem depois
+            this._pushState();
+
+            // Rastrear alunos conectados
+            let clientCount = 0;
+            const clientsRef = this.roomRef.child('clients');
+
+            const addedCb = clientsRef.on('child_added', () => {
+                clientCount++;
+                this._updateStatus(`Aluno conectado (${clientCount} total)`);
+                this._pushState(); // Atualiza o estado para o novo aluno
+            });
+            this._listeners.push({ ref: clientsRef, event: 'child_added', cb: addedCb });
+
+            const removedCb = clientsRef.on('child_removed', () => {
+                clientCount = Math.max(0, clientCount - 1);
+                this._updateStatus(clientCount > 0 ? `${clientCount} aluno(s) conectado(s)` : 'Nenhum aluno conectado');
+            });
+            this._listeners.push({ ref: clientsRef, event: 'child_removed', cb: removedCb });
+
+            // Limpeza periódica de ações antigas (a cada 60s, remove ações > 2 min)
+            this._cleanupInterval = setInterval(() => {
+                if (!this.roomRef) return;
+                const cutoff = Date.now() - 120000;
+                this.roomRef.child('actions').orderByChild('ts').endAt(cutoff).once('value', snap => {
+                    const updates = {};
+                    snap.forEach(child => { updates[child.key] = null; });
+                    if (Object.keys(updates).length > 0) {
+                        this.roomRef.child('actions').update(updates);
                     }
                 });
-            });
+            }, 60000);
 
-            conn.on('close', () => {
-                this.connections = this.connections.filter(c => c !== conn);
-                this._updateStatus(`Aluno desconectado (${this.connections.length} total)`);
-            });
-        });
-
-        this.peer.on('error', (err) => {
-            console.error('PeerJS Error:', err);
-            if (err.type === 'unavailable-id') {
-                this._updateStatus(`Erro: ID em uso. Reconectando em 3s...`);
-                this.appManager.getGlobals().consolePanel.log(`A sala '${roomId}' ainda esta bloqueada. Tentando reconectar automaticamente...`, 'warning');
-                
-                // Cleanup current broken peer
-                if (this.peer) {
-                    this.peer.destroy();
-                    this.peer = null;
-                }
-                
-                // Auto-retry
-                setTimeout(() => {
-                    if (this.roomId === roomId) { // Make sure user didn't try another room
-                        this.hostRoom(roomId);
-                    }
-                }, 3000);
-            } else {
-                this._updateStatus(`Erro: ${err.type}`);
-            }
+        }).catch(err => {
+            this._updateStatus(`Erro ao criar sala: ${err.message}`);
+            alert(`Erro ao criar sala: ${err.message}`);
         });
     }
 
+    _pushState() {
+        if (!this.roomRef || !this.isHost) return;
+        this.roomRef.child('state').set({
+            activeModuleId: this.appManager.activeModuleId,
+            isPresentationMode: this.appManager.isPresentationMode,
+            projectorProfile: this.appManager.projectorProfile,
+            activeViewTab: this.appManager.activeViewTab,
+            isSidebarCollapsed: document.querySelector('.left-sidebar')?.classList.contains('collapsed') || false
+        });
+    }
+
+    // ─────────────────────────────────────────────────────
+    //  CLIENT: Entrar na sala
+    // ─────────────────────────────────────────────────────
     joinRoom(roomId) {
         this.leaveRoom();
-        
-        const fullRoomId = `ed-interativo-${roomId}`.toLowerCase();
-        
-        this.peer = new Peer({ debug: 2 });
+        if (!this.db) {
+            this._updateStatus('Erro: Firebase não configurado.');
+            alert('Firebase não está configurado.');
+            return;
+        }
 
-        this.peer.on('open', (id) => {
-            this.hostConnection = this.peer.connect(fullRoomId, {
-                reliable: true
+        const safeName = roomId.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+        this.roomRef = this.db.ref(`rooms/${safeName}`);
+
+        // Verificar se a sala existe
+        this.roomRef.child('hostActive').once('value').then(snap => {
+            if (!snap.val()) {
+                this._updateStatus(`Sala "${roomId}" não encontrada.`);
+                alert(`Sala "${roomId}" não encontrada ou o professor já saiu. Verifique o ID.`);
+                this.roomRef = null;
+                return;
+            }
+
+            this.isClient = true;
+            this.roomId = roomId;
+
+            // Registrar como aluno (com auto-remoção ao desconectar)
+            const clientId = 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+            this._clientRef = this.roomRef.child(`clients/${clientId}`);
+            this._clientRef.set(true);
+            this._clientRef.onDisconnect().remove();
+
+            this._updateStatus(`Conectado à sala: ${roomId}`);
+            document.body.classList.add('sync-client-mode');
+
+            // 1) Buscar estado inicial (módulo ativo, modo apresentação, etc.)
+            this.roomRef.child('state').once('value').then(stateSnap => {
+                const state = stateSnap.val();
+                if (state) {
+                    this._handleIncomingAction({ action: 'SYNC_STATE', payload: state });
+                }
             });
 
-            this.hostConnection.on('open', () => {
-                this.isClient = true;
-                this.roomId = roomId;
-                this._updateStatus(`Conectado à sala: ${roomId}`);
-                
-                // Disable UI interactions for the client
-                document.body.classList.add('sync-client-mode');
+            // 2) Escutar NOVAS ações (pula as que já existiam antes de entrar)
+            const actionsRef = this.roomRef.child('actions');
+            actionsRef.once('value').then(existingSnap => {
+                const existingKeys = new Set();
+                existingSnap.forEach(child => existingKeys.add(child.key));
+
+                const actionCb = actionsRef.on('child_added', (snap) => {
+                    if (existingKeys.has(snap.key)) return; // Ignora ações antigas
+                    const data = snap.val();
+                    if (data) {
+                        this._handleIncomingAction(data);
+                    }
+                });
+                this._listeners.push({ ref: actionsRef, event: 'child_added', cb: actionCb });
             });
 
-            this.hostConnection.on('data', (data) => {
-                this._handleIncomingAction(data);
+            // 3) Escutar cursor do professor
+            const cursorRef = this.roomRef.child('cursor');
+            const cursorCb = cursorRef.on('value', (snap) => {
+                const pos = snap.val();
+                if (pos) {
+                    this._handleIncomingAction({ action: 'SYNC_MOUSE', payload: pos });
+                }
             });
+            this._listeners.push({ ref: cursorRef, event: 'value', cb: cursorCb });
 
-            this.hostConnection.on('close', () => {
-                this.leaveRoom();
-                this._updateStatus('Conexão encerrada pelo host.');
+            // 4) Escutar sync de inputs
+            const inputRef = this.roomRef.child('inputSync');
+            const inputCb = inputRef.on('value', (snap) => {
+                const val = snap.val();
+                if (val) {
+                    this._handleIncomingAction({ action: 'SYNC_INPUT', payload: val });
+                }
             });
-        });
+            this._listeners.push({ ref: inputRef, event: 'value', cb: inputCb });
 
-        this.peer.on('error', (err) => {
-            this._updateStatus(`Erro: ${err.type}`);
+            // 5) Detectar se o professor saiu
+            const hostRef = this.roomRef.child('hostActive');
+            const hostCb = hostRef.on('value', (snap) => {
+                if (snap.val() === false && this.isClient) {
+                    this._updateStatus('O professor encerrou a sala.');
+                    alert('O professor encerrou a sala.');
+                    this.leaveRoom();
+                }
+            });
+            this._listeners.push({ ref: hostRef, event: 'value', cb: hostCb });
+
+        }).catch(err => {
+            this._updateStatus(`Erro: ${err.message}`);
+            alert(`Erro ao entrar na sala: ${err.message}`);
         });
     }
 
+    // ─────────────────────────────────────────────────────
+    //  Sair / Desconectar
+    // ─────────────────────────────────────────────────────
     leaveRoom() {
-        if (this.connections.length > 0) {
-            this.connections.forEach(conn => conn.close());
-            this.connections = [];
+        // Remover todos os listeners do Firebase
+        this._listeners.forEach(({ ref, event, cb }) => {
+            ref.off(event, cb);
+        });
+        this._listeners = [];
+
+        // Remover registro de aluno
+        if (this._clientRef) {
+            this._clientRef.remove();
+            this._clientRef = null;
         }
-        if (this.hostConnection) {
-            this.hostConnection.close();
-            this.hostConnection = null;
+
+        // Se for host, limpar a sala inteira
+        if (this.isHost && this.roomRef) {
+            this.roomRef.child('hostActive').onDisconnect().cancel();
+            this.roomRef.remove();
         }
-        if (this.peer) {
-            this.peer.destroy();
-            this.peer = null;
+
+        if (this._cleanupInterval) {
+            clearInterval(this._cleanupInterval);
+            this._cleanupInterval = null;
         }
-        
+
+        this.roomRef = null;
         this.isHost = false;
         this.isClient = false;
         this.roomId = null;
-        
+
         document.body.classList.remove('sync-client-mode');
         this._updateStatus('Desconectado');
     }
 
-    // Called by the application to send actions to clients
+    // ─────────────────────────────────────────────────────
+    //  Enviar ações para os alunos (via Firebase)
+    // ─────────────────────────────────────────────────────
     broadcastAction(action, payload = {}) {
-        if (!this.isHost || this.connections.length === 0) return;
-        
-        const message = { action, payload };
-        this.connections.forEach(conn => {
-            if (conn.open) {
-                conn.send(message);
-            }
+        if (!this.isHost || !this.roomRef) return;
+
+        // Cursor: sobrescreve (alta frequência, só o último importa)
+        if (action === 'SYNC_MOUSE') {
+            this.roomRef.child('cursor').set(payload);
+            return;
+        }
+
+        // Input sync: sobrescreve
+        if (action === 'SYNC_INPUT') {
+            this.roomRef.child('inputSync').set(payload);
+            return;
+        }
+
+        // Demais ações: push para a lista
+        this.roomRef.child('actions').push({
+            action,
+            payload,
+            ts: firebase.database.ServerValue.TIMESTAMP
         });
+
+        // Atualiza snapshot de estado para alunos que entrarem depois
+        const stateActions = [
+            'CHANGE_MODULE', 'TOGGLE_PRESENTATION_MODE',
+            'SET_PROJECTOR_PROFILE', 'SET_MAIN_VIEW_TAB', 'TOGGLE_SIDEBAR'
+        ];
+        if (stateActions.includes(action)) {
+            this._pushState();
+        }
     }
 
-    // Handles incoming actions on the client side
+    // ─────────────────────────────────────────────────────
+    //  Processar ações recebidas (MESMA LÓGICA DE ANTES)
+    // ─────────────────────────────────────────────────────
     _handleIncomingAction(data) {
         if (!data || !data.action) return;
         const { action, payload } = data;
-        
+
         const module = this.appManager.activeModule;
 
         switch (action) {
@@ -264,8 +395,8 @@ class SyncManager {
                 this.appManager._syncProjectorProfileUi();
                 break;
             case 'SYNC_SCROLL':
-                const sidebar = document.querySelector('.left-sidebar');
-                if (sidebar) sidebar.scrollTop = payload.scrollTop;
+                const scrollSidebar = document.querySelector('.left-sidebar');
+                if (scrollSidebar) scrollSidebar.scrollTop = payload.scrollTop;
                 break;
             case 'TOGGLE_SIDEBAR':
                 const sb = document.querySelector('.left-sidebar');
@@ -280,7 +411,7 @@ class SyncManager {
                     cursor.style.display = 'block';
                     cursor.style.left = `${payload.x * window.innerWidth}px`;
                     cursor.style.top = `${payload.y * window.innerHeight}px`;
-                    
+
                     clearTimeout(this._cursorTimeout);
                     this._cursorTimeout = setTimeout(() => { cursor.style.display = 'none'; }, 2000);
                 }
@@ -293,12 +424,26 @@ class SyncManager {
                 break;
             case 'EXECUTE_OPERATION':
                 if (module && typeof module.executeOperation === 'function') {
-                    module.executeOperation(payload.methodName, payload.args, false, payload.autoPlay, true);
+                    this.isExecutingFromNetwork = true;
+                    try {
+                        if (payload.fullArgs) {
+                            module.executeOperation(...payload.fullArgs);
+                        } else {
+                            module.executeOperation(payload.methodName, payload.args, false, payload.autoPlay, true);
+                        }
+                    } finally {
+                        this.isExecutingFromNetwork = false;
+                    }
                 }
                 break;
             case 'RUN_SCENARIO':
                 if (module && typeof module.runScenario === 'function') {
-                    module.runScenario(payload.scenarioId, true);
+                    this.isExecutingFromNetwork = true;
+                    try {
+                        module.runScenario(payload.scenarioId, true);
+                    } finally {
+                        this.isExecutingFromNetwork = false;
+                    }
                 }
                 break;
             case 'ANIM_PLAY':
@@ -322,16 +467,20 @@ class SyncManager {
                 }
                 break;
             case 'ANIM_RESTART':
-                if (module && module.animationController) {
-                    module.animationController.restart(true);
-                } else if (module && typeof module.resetSystem === 'function') {
-                    module.resetSystem(true);
+                this.isExecutingFromNetwork = true;
+                try {
+                    if (module && module.animationController) {
+                        module.animationController.restart(true);
+                    } else if (module && typeof module.resetSystem === 'function') {
+                        module.resetSystem(true);
+                    }
+                } finally {
+                    this.isExecutingFromNetwork = false;
                 }
                 break;
             case 'ANIM_SET_SPEED':
                 if (module && module.animationController) {
                     module.animationController.setSpeed(payload.speed, true);
-                    // Also update the UI slider so the student sees the speed change
                     const speedSelect = document.getElementById('speedSelect');
                     if (speedSelect) speedSelect.value = payload.speed;
                 }
