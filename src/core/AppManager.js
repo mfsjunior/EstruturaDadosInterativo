@@ -104,17 +104,8 @@ class AppManager {
             };
         }
 
-        // Intercept runScenario
-        if (typeof moduleInstance.runScenario === 'function') {
-            const originalRun = moduleInstance.runScenario.bind(moduleInstance);
-            moduleInstance.runScenario = (...args) => {
-                const isFromNetwork = this.syncManager && this.syncManager.isExecutingFromNetwork;
-                if (!isFromNetwork && this.syncManager && this.syncManager.isHost) {
-                    this.syncManager.broadcastAction('RUN_SCENARIO', { scenarioId: args[0] });
-                }
-                return originalRun(...args);
-            };
-        }
+        // Não interceptamos runScenario pois ele internamente chama executeOperation,
+        // que já é interceptado e enviado passo a passo. Isso evita operações duplicadas.
 
         // Intercept resetSystem
         if (typeof moduleInstance.resetSystem === 'function') {

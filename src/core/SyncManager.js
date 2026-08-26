@@ -202,18 +202,8 @@ class SyncManager {
             });
             this._listeners.push({ ref: clientsRef, event: 'child_removed', cb: removedCb });
 
-            // Limpeza periódica de ações antigas (a cada 60s, remove ações > 2 min)
-            this._cleanupInterval = setInterval(() => {
-                if (!this.roomRef) return;
-                const cutoff = Date.now() - 120000;
-                this.roomRef.child('actions').orderByChild('ts').endAt(cutoff).once('value', snap => {
-                    const updates = {};
-                    snap.forEach(child => { updates[child.key] = null; });
-                    if (Object.keys(updates).length > 0) {
-                        this.roomRef.child('actions').update(updates);
-                    }
-                });
-            }, 60000);
+            // A limpeza periódica de ações foi removida para permitir
+            // que alunos "late-joiners" reconstruam o estado completo da sala.
 
         }).catch(err => {
             this.isHost = false;
@@ -276,21 +266,30 @@ class SyncManager {
                 }
             });
 
-            // 2) Escutar NOVAS ações (pula as que já existiam antes de entrar)
+            // 2) Escutar AÇÕES. Como a limpeza foi removida, alunos
+            // reconstruirão o estado processando o histórico em fast-forward naturalmente.
             const actionsRef = this.roomRef.child('actions');
-            actionsRef.once('value').then(existingSnap => {
-                const existingKeys = new Set();
-                existingSnap.forEach(child => existingKeys.add(child.key));
-
-                const actionCb = actionsRef.on('child_added', (snap) => {
-                    if (existingKeys.has(snap.key)) return; // Ignora ações antigas
-                    const data = snap.val();
-                    if (data) {
-                        this._handleIncomingAction(data);
-                    }
-                });
-                this._listeners.push({ ref: actionsRef, event: 'child_added', cb: actionCb });
+            let initialLoad = true;
+            
+            actionsRef.once('value').then(() => {
+                initialLoad = false;
+                // Força fast-forward na última ação antiga se estiver animando
+                if (this.appManager.activeModule && this.appManager.activeModule.animationController) {
+                    this.appManager.activeModule.animationController.fastForward();
+                }
             });
+
+            const actionCb = actionsRef.on('child_added', (snap) => {
+                const data = snap.val();
+                if (data) {
+                    this._handleIncomingAction(data);
+                    // Se ainda estivermos no carregamento inicial, força fast-forward
+                    if (initialLoad && this.appManager.activeModule && this.appManager.activeModule.animationController) {
+                        this.appManager.activeModule.animationController.fastForward();
+                    }
+                }
+            });
+            this._listeners.push({ ref: actionsRef, event: 'child_added', cb: actionCb });
 
             // 3) Escutar cursor do professor
             const cursorRef = this.roomRef.child('cursor');
