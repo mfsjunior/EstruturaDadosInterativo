@@ -63,10 +63,8 @@ class SyncManager {
                 this.joinRoom('global_class');
                 
                 // Ocultar os botões de host e mostrar os de Sair
-                const btnHost = document.getElementById('btnHostRoom');
                 const btnLeave = document.getElementById('btnLeaveRoom');
                 const syncPanel = document.getElementById('syncPanel');
-                if (btnHost) btnHost.classList.add('hidden');
                 if (btnLeave) btnLeave.classList.remove('hidden');
                 if (syncPanel) syncPanel.classList.add('active-sync');
             }
@@ -321,10 +319,8 @@ class SyncManager {
                     this._updateStatus('O professor encerrou a aula.');
                     this.leaveRoom();
                     // Restaurar botões do painel globalmente
-                    const btnHost = document.getElementById('btnHostRoom');
                     const btnLeave = document.getElementById('btnLeaveRoom');
                     const syncPanel = document.getElementById('syncPanel');
-                    if (btnHost) btnHost.classList.remove('hidden');
                     if (btnLeave) btnLeave.classList.add('hidden');
                     if (syncPanel) syncPanel.classList.remove('active-sync');
                 }

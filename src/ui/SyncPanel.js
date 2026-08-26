@@ -55,7 +55,7 @@ class SyncPanel {
     }
 
     _toggleMode(isActive) {
-        document.getElementById('btnHostRoom').classList.toggle('hidden', isActive);
+        // O botão Iniciar Aula (Tomar Controle) NUNCA é ocultado, permitindo que o professor retome a sessão
         document.getElementById('btnLeaveRoom').classList.toggle('hidden', !isActive);
         
         if (isActive) {
