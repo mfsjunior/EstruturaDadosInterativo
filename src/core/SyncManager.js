@@ -170,13 +170,15 @@ class SyncManager {
         const safeName = roomId.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
         this.roomRef = this.db.ref(`rooms/${safeName}`);
 
+        // Definir ANTES do set para evitar que eventos locais (optimistic) tratem o professor como aluno!
+        this.isHost = true; 
+
         // Limpa dados antigos, cria a sala e envia sinal de refresh para alunos existentes
         this.roomRef.set({
             hostActive: true,
             createdAt: firebase.database.ServerValue.TIMESTAMP,
             forceRefresh: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
-            this.isHost = true;
             this._updateStatus(`Controlando a Aula`);
 
             // Auto-remove quando o host desconectar inesperadamente
@@ -216,6 +218,7 @@ class SyncManager {
             }, 60000);
 
         }).catch(err => {
+            this.isHost = false;
             this._updateStatus(`Erro ao criar sala: ${err.message}`);
             alert(`Erro ao criar sala: ${err.message}`);
         });
