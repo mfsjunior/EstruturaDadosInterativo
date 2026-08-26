@@ -33,12 +33,54 @@ class SyncManager {
                 }
                 this.db = firebase.database();
                 console.log('[SyncManager] Firebase inicializado com sucesso.');
+                
+                // --- NOVO: Auto-escutar a sala global para alunos ---
+                this._watchGlobalRoom();
             } catch (err) {
                 console.error('[SyncManager] Erro ao iniciar Firebase:', err);
             }
         } else {
             console.warn('[SyncManager] Firebase não configurado. Abra firebaseConfig.js e preencha as credenciais.');
         }
+    }
+
+    _watchGlobalRoom() {
+        if (!this.db) return;
+        
+        const loadTime = Date.now();
+        const globalRef = this.db.ref('rooms/global_class');
+        
+        // Se o professor estiver online, entrar automaticamente (caso não seja o professor)
+        globalRef.child('hostActive').on('value', snap => {
+            const isHostActive = snap.val();
+            if (isHostActive && !this.isHost && !this.isClient) {
+                console.log('[SyncManager] Sala Global ativa. Conectando automaticamente...');
+                
+                // Mostrar status amigável
+                this._updateStatus('Aula iniciada! Conectando...');
+                
+                // Conectar
+                this.joinRoom('global_class');
+                
+                // Ocultar os botões de host e mostrar os de Sair
+                const btnHost = document.getElementById('btnHostRoom');
+                const btnLeave = document.getElementById('btnLeaveRoom');
+                const syncPanel = document.getElementById('syncPanel');
+                if (btnHost) btnHost.classList.add('hidden');
+                if (btnLeave) btnLeave.classList.remove('hidden');
+                if (syncPanel) syncPanel.classList.add('active-sync');
+            }
+        });
+        
+        // Se o professor clicar em Iniciar Aula, ele força o refresh nos alunos conectados
+        globalRef.child('forceRefresh').on('value', snap => {
+            const refreshTime = snap.val();
+            // Se o refreshTime for mais novo que a hora que carregamos a página, dar refresh
+            if (refreshTime && refreshTime > loadTime && !this.isHost) {
+                console.log('[SyncManager] Professor solicitou sincronização forçada (Refresh).');
+                window.location.reload();
+            }
+        });
     }
 
     _initHostCursor() {
@@ -128,13 +170,14 @@ class SyncManager {
         const safeName = roomId.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
         this.roomRef = this.db.ref(`rooms/${safeName}`);
 
-        // Limpa dados antigos e cria a sala
+        // Limpa dados antigos, cria a sala e envia sinal de refresh para alunos existentes
         this.roomRef.set({
             hostActive: true,
-            createdAt: firebase.database.ServerValue.TIMESTAMP
+            createdAt: firebase.database.ServerValue.TIMESTAMP,
+            forceRefresh: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
             this.isHost = true;
-            this._updateStatus(`Hospedando Sala: ${roomId}`);
+            this._updateStatus(`Controlando a Aula`);
 
             // Auto-remove quando o host desconectar inesperadamente
             this.roomRef.child('hostActive').onDisconnect().set(false);
@@ -221,7 +264,7 @@ class SyncManager {
             this._clientRef.set(true);
             this._clientRef.onDisconnect().remove();
 
-            this._updateStatus(`Conectado à sala: ${roomId}`);
+            this._updateStatus(`Assistindo Aula`);
             document.body.classList.add('sync-client-mode');
 
             // 1) Buscar estado inicial (módulo ativo, modo apresentação, etc.)
@@ -272,9 +315,15 @@ class SyncManager {
             const hostRef = this.roomRef.child('hostActive');
             const hostCb = hostRef.on('value', (snap) => {
                 if (snap.val() === false && this.isClient) {
-                    this._updateStatus('O professor encerrou a sala.');
-                    alert('O professor encerrou a sala.');
+                    this._updateStatus('O professor encerrou a aula.');
                     this.leaveRoom();
+                    // Restaurar botões do painel globalmente
+                    const btnHost = document.getElementById('btnHostRoom');
+                    const btnLeave = document.getElementById('btnLeaveRoom');
+                    const syncPanel = document.getElementById('syncPanel');
+                    if (btnHost) btnHost.classList.remove('hidden');
+                    if (btnLeave) btnLeave.classList.add('hidden');
+                    if (syncPanel) syncPanel.classList.remove('active-sync');
                 }
             });
             this._listeners.push({ ref: hostRef, event: 'value', cb: hostCb });

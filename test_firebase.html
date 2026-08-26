@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <h1>Testing Firebase...</h1>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDygmPWOUrfgzwD6YEGUxniMrMPfpBvUPU",
+            authDomain: "ed-interativo.firebaseapp.com",
+            databaseURL: "https://ed-interativo-default-rtdb.firebaseio.com",
+            projectId: "ed-interativo",
+            storageBucket: "ed-interativo.firebasestorage.app",
+            messagingSenderId: "717912984112",
+            appId: "1:717912984112:web:002506905a79a95fe3fbf5"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        console.log("Firebase init done");
+        db.ref("test_connection").set({ time: Date.now() })
+            .then(() => console.log("FIREBASE_SUCCESS"))
+            .catch(err => console.log("FIREBASE_ERROR: " + err.message));
+    </script>
+</body>
+</html>

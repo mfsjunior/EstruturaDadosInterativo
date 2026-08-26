@@ -19,19 +19,15 @@ class SyncPanel {
         
         this.container.innerHTML = `
             <div class="sync-header">
-                <span>📡 Sync</span>
+                <span>📡 Sala de Aula</span>
                 <button id="btnToggleSync" class="icon-btn">▼</button>
             </div>
             <div class="sync-content">
-                <div class="sync-input-group">
-                    <input type="text" id="syncRoomId" placeholder="ID da Sala (ex: AULA1)" />
+                <div class="sync-actions" style="margin-top: 5px;">
+                    <button id="btnHostRoom" class="action-btn primary">Iniciar Aula (Tomar Controle)</button>
                 </div>
-                <div class="sync-actions">
-                    <button id="btnHostRoom" class="action-btn primary">Hospedar (Prof)</button>
-                    <button id="btnJoinRoom" class="action-btn info">Entrar (Aluno)</button>
-                </div>
-                <div class="sync-status" id="syncStatusText">Desconectado</div>
-                <button id="btnLeaveRoom" class="action-btn danger hidden">Sair / Desconectar</button>
+                <div class="sync-status" id="syncStatusText">Aguardando Professor...</div>
+                <button id="btnLeaveRoom" class="action-btn danger hidden">Encerrar / Sair</button>
             </div>
         `;
         
@@ -43,22 +39,7 @@ class SyncPanel {
         });
 
         document.getElementById('btnHostRoom').addEventListener('click', () => {
-            const roomId = document.getElementById('syncRoomId').value.trim();
-            if (!roomId) {
-                this._updateStatus('Digite um ID válido.');
-                return;
-            }
-            this.syncManager.hostRoom(roomId);
-            this._toggleMode(true);
-        });
-
-        document.getElementById('btnJoinRoom').addEventListener('click', () => {
-            const roomId = document.getElementById('syncRoomId').value.trim();
-            if (!roomId) {
-                this._updateStatus('Digite um ID válido.');
-                return;
-            }
-            this.syncManager.joinRoom(roomId);
+            this.syncManager.hostRoom('global_class');
             this._toggleMode(true);
         });
 
@@ -75,8 +56,6 @@ class SyncPanel {
 
     _toggleMode(isActive) {
         document.getElementById('btnHostRoom').classList.toggle('hidden', isActive);
-        document.getElementById('btnJoinRoom').classList.toggle('hidden', isActive);
-        document.getElementById('syncRoomId').classList.toggle('hidden', isActive);
         document.getElementById('btnLeaveRoom').classList.toggle('hidden', !isActive);
         
         if (isActive) {
