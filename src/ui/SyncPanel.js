@@ -39,8 +39,13 @@ class SyncPanel {
         });
 
         document.getElementById('btnHostRoom').addEventListener('click', () => {
-            this.syncManager.hostRoom('global_class');
-            this._toggleMode(true);
+            const senha = prompt("Digite a senha do professor para tomar o controle da sessão:");
+            if (senha === 'edlab' || senha === 'edlab2026') {
+                this.syncManager.hostRoom('global_class');
+                this._toggleMode(true);
+            } else if (senha !== null) {
+                alert("Senha incorreta. Acesso negado.");
+            }
         });
 
         document.getElementById('btnLeaveRoom').addEventListener('click', () => {
