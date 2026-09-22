@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ED Lab | Estruturas de Dados Interativas</title>
+    <link rel="stylesheet" href="css/style.css?v=20260904-2" />
+    <link rel="stylesheet" href="css/engine.css?v=20260903-5" />
+    <!-- PeerJS for WebRTC -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <!-- Firebase SDK for SyncManager & Auth -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDygmPWOUrfgzwD6YEGUxniMrMPfpBvUPU",
+            authDomain: "ed-interativo.firebaseapp.com",
+            databaseURL: "https://ed-interativo-default-rtdb.firebaseio.com",
+            projectId: "ed-interativo",
+            storageBucket: "ed-interativo.firebasestorage.app",
+            messagingSenderId: "717912984112",
+            appId: "1:717912984112:web:002506905a79a95fe3fbf5"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+    </script>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay"></div>
+        <header class="app-header">
+            <div class="header-left">
+                <button class="sidebar-toggle-btn" aria-label="Alternar menu" style="display: none !important;">&#9776;</button>
+                <a href="index.html" class="brand" style="text-decoration: none;">
+                    <span class="brand-name">ED Lab</span>
+                </a>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-index" id="headerModuleIndex">02</span>
+                    <span class="breadcrumb-sep">-</span>
+                    <span id="headerModuleName">LinkedList (Dupla)</span>
+                </div>
+            </div>
+
+            <div class="header-tabs" id="viewTabs">
+                <button class="view-tab active" data-view="logical">ESTRUTURA</button>
+                <button class="view-tab" data-view="memory">MEM&Oacute;RIA</button>
+                <button class="view-tab" data-view="split">SPLIT VIEW</button>
+                <button class="view-tab" data-view="debug">DEBUG</button>
+            </div>
+
+            <div class="header-right">
+                <select id="speedSelect" class="speed-select hidden" aria-label="Velocidade" style="display: none;">
+                    <option value="0.5">0.5x</option>
+                    <option value="1" selected>1x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2x</option>
+                    <option value="3">3x</option>
+                </select>
+                <button id="btnPrevStep" class="header-btn">&#9664; Anterior</button>
+                <button id="btnPlayPause" class="header-btn primary">&#9654; Play</button>
+                <button id="btnNextStep" class="header-btn">&#9193; Passo</button>
+                <button id="btnFastForward" class="header-btn">&#9193; Concluir</button>
+                <button id="btnRestartAnim" class="header-btn">&#8635; Resetar</button>
+                <button id="btnVisualAlgorithm" class="header-btn" type="button">CÓDIGO</button>
+                <button id="btnExpandWorkspace" class="header-btn success" type="button" title="Expandir Sala">⛶ Expandir</button>
+                <button id="btnExitExpanded" class="header-btn exit-expanded hidden" type="button">Sair da Sala</button>
+                <select id="projectorProfileSelect" class="speed-select" aria-label="Perfil de proje&ccedil;&atilde;o">
+                    <option value="normal">Normal</option>
+                    <option value="projector" selected>Projetor</option>
+                    <option value="ultra">Ultra +8%</option>
+                </select>
+                <button id="btnUltraProjector" class="header-btn" type="button" aria-pressed="false" title="Ativar ultra projetor (+8%)">Ultra +8%</button>
+                <button id="btnTheoryModal" class="header-btn success" type="button" title="Aprender a teoria desta estrutura">📖 Teoria</button>
+                <button id="btnToggleEngineMode" class="header-btn" style="background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%); color: white; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 12px rgba(99,102,241,0.4);" type="button" title="Abrir Engine de Decisão e Hardware">🧠 D.S. Engine</button>
+                <button class="header-btn icon-btn" aria-label="Configura&ccedil;&otilde;es">&#9881;</button>
+            </div>
+        </header>
+
+        <div class="app-body no-right-sidebar">
+            <aside class="left-sidebar">
+                <div class="sidebar-section sidebar-card">
+                    <nav class="sidebar-nav">
+                        <ul>
+                            <li class="nav-item active" data-module="Array">01 - Array Sequencial <span class="nav-meta">Sprint01ManualArray</span></li>
+                            <li class="nav-item" data-module="LinkedList">02 - Lista Simples <span class="nav-meta">Sprint02ManualLinkedList</span></li>
+                            <li class="nav-item" data-module="DoublyLinkedList">03 - Lista Dupla <span class="nav-meta">Sprint03ManualDoublyLinkedList</span></li>
+                            <li class="nav-item" data-module="Stack">04 - Pilha (LIFO) <span class="nav-meta">Sprint04ManualStack</span></li>
+                            <li class="nav-item" data-module="CircularQueue">05 - Fila Circular (FIFO) <span class="nav-meta">Sprint05ManualCircularQueue</span></li>
+                            <li class="nav-item" data-module="PriorityHeap">06 - Heap de Prioridade <span class="nav-meta">Sprint06ManualPriorityHeap</span></li>
+                            <li class="nav-item" data-module="HashTable">07 - Tabela Hash <span class="nav-meta">Sprint07ManualHashTable</span></li>
+                            <li class="nav-item" data-module="BST">08 - Arvore BST <span class="nav-meta">Sprint08ManualBinarySearchTree</span></li>
+                            <li class="nav-item" data-module="AVL">09 - Arvore AVL <span class="nav-meta">Sprint09ManualAvlTree</span></li>
+                            <li class="nav-item" data-module="RedBlack">10 - Arvore Red-Black <span class="nav-meta">Sprint10ManualRedBlackTree</span></li>
+                            <li class="nav-item" data-module="Trie">11 - Arvore Trie <span class="nav-meta">Sprint11ManualTrie</span></li>
+                            <li class="nav-item" data-module="SegmentTree">12 - Arvore de Segmentos <span class="nav-meta">Sprint12ManualSegmentTree</span></li>
+                            <li class="nav-item" data-module="FenwickTree">13 - Arvore Fenwick / BIT <span class="nav-meta">Sprint13ManualFenwickTree</span></li>
+                            <li class="nav-item" data-module="UnionFind">14 - Union-Find <span class="nav-meta">Sprint14ManualUnionFind</span></li>
+                            <li class="nav-item" data-module="Graph">15 - Grafo (Adjacencia) <span class="nav-meta">Sprint15ManualGraph</span></li>
+                            <li class="nav-item" data-module="Deque">16 - Deque (Fila Dupla) <span class="nav-meta">Sprint16ManualDeque</span></li>
+                            <li class="nav-item" data-module="KDTree">17 - Árvore k-d (Busca Espacial) <span class="nav-meta">Sprint17ManualKDTree</span></li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <div class="sidebar-section left-controls-host sidebar-card" id="leftControlsHost">
+                    <h3>OPERA&Ccedil;&Otilde;ES</h3>
+                </div>
+            </aside>
+
+            <main class="center-workspace">
+                <!-- Tira de cenários mobile (carrossel horizontal) -->
+                <div id="mobileScenariosStrip" class="mobile-scenarios-strip" aria-label="Cenários rápidos"></div>
+                <!-- Bar de cenários desktop -->
+                <div id="expandedScenarioBar" class="expanded-scenarios hidden" aria-label="Cenários rápidos"></div>
+                <div id="mainStructureCard" class="viz-card">
+                    <div class="card-header" style="flex-wrap: nowrap;">
+                        <h3 id="mainStructureTitle" style="white-space: nowrap;">MAPA DE MEM&Oacute;RIA <span class="info-icon" title="Endere&ccedil;os ilustrativos &mdash; representam refer&ecirc;ncias entre objetos.">&#8505;</span></h3>
+                        <div id="timelineActionText" style="flex: 1; margin: 0 1.5rem; color: #93c5fd; font-size: 0.95rem; font-weight: 500; background: rgba(59, 130, 246, 0.15); padding: 0.4rem 1rem; border-radius: 6px; border: 1px solid rgba(59,130,246,0.3); display: flex; align-items: center; justify-content: center; text-align: center; min-height: 2.2rem;">Aguardando opera&ccedil;&atilde;o...</div>
+
+                        <div class="card-header-actions" style="white-space: nowrap;">
+                            <div id="mainStructureLegend" class="legend">Endere&ccedil;os ilustrativos &mdash; representam refer&ecirc;ncias entre objetos.</div>
+                        </div>
+                    </div>
+                    <div class="visualizer-area">
+                        <div id="logicalView" class="view-layer active">
+                            <div id="nodesContainer" class="nodes-container"></div>
+                            <svg id="arrowsCanvas" class="arrows-canvas" viewBox="0 0 1000 520" preserveAspectRatio="none"></svg>
+                        </div>
+                        <div id="stepTooltip" class="hidden"></div>
+                    </div>
+                </div>
+
+                <div class="viz-card heap-tree-card hidden" id="heapTreeCard">
+                    <div class="card-header">
+                        <h3 id="heapTreeTitle">ARVORE BINARIA DO HEAP</h3>
+                        <div class="card-header-actions">
+                            <button id="btnHeapTreeToggleMeta" class="header-btn heap-tree-toggle" type="button">Somente valores</button>
+                            <div id="heapTreeLegend" class="legend">Visualizacao logica por niveis (pai -> filhos)</div>
+                        </div>
+                    </div>
+                    <div id="heapTreePreview" class="heap-tree-preview"></div>
+                </div>
+
+                <div class="viz-card heap-card" id="heapCard">
+                    <div class="card-header">
+                        <h3 id="memoryCardTitle">HEAP (N&Oacute;S NA MEM&Oacute;RIA)</h3>
+                    </div>
+                    <div class="visualizer-area">
+                        <div id="memoryView" class="view-layer active">
+                            <div id="memoryNodesContainer" class="memory-nodes-container"></div>
+                            <svg id="memoryArrowsCanvas" class="arrows-canvas" viewBox="0 0 1000 520" preserveAspectRatio="none"></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="viz-card timeline-card">
+                    <div class="card-header">
+                        <h3>TIMELINE / PASSOS DA OPERA&Ccedil;&Atilde;O</h3>
+                    </div>
+                    <div id="timelineTrack" class="timeline-track"></div>
+                </div>
+
+                <div class="viz-card console-card hidden">
+                    <div class="card-header"><h3>CONSOLE / EXPLICA&Ccedil;&Atilde;O</h3></div>
+                    <div id="executionLog" class="execution-console">Aguardando operacao...</div>
+                </div>
+
+                <div id="algorithmDebugCard" class="viz-card algorithm-debug-card hidden professor-off">
+                    <div class="card-header">
+                        <h3 id="debugModeLabel">ALGORITHM DEBUGGER</h3>
+                        <div class="card-header-actions debug-controls-row">
+                            <label class="toggle-label" for="debugToggleLeftPane">
+                                <input id="debugToggleLeftPane" type="checkbox" checked />
+                                <span>PAINEL ESQUERDO</span>
+                            </label>
+                            <label class="toggle-label" for="debugProfessorToggle">
+                                <input id="debugProfessorToggle" type="checkbox" />
+                                <span>MODO PROFESSOR</span>
+                            </label>
+                            <label class="toggle-label" for="debugAutoPause">
+                                <input id="debugAutoPause" type="checkbox" />
+                                <span>Auto-pause por evento</span>
+                            </label>
+                            <select id="debugSpeedSelect" class="speed-select" aria-label="Velocidade debug">
+                                <option value="0.5">0.5x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="2">2x</option>
+                                <option value="4">4x</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="algorithm-debug-grid">
+                        <section class="debug-pane debug-pane-left">
+                            <h4>ALGORITMO</h4>
+                            <div id="debugOperationText" class="debug-operation">-</div>
+                            <div id="debugStepText" class="debug-step">Step 0 / 0</div>
+                            <button id="btnDebugToggleArrayDetails" class="header-btn debug-array-toggle hidden" type="button">Mostrar detalhes</button>
+                            <div class="debug-array-details-panel">
+                                <div id="debugQuickOps" class="debug-block hidden">
+                                    <h5>OPERA&Ccedil;&Otilde;ES R&Aacute;PIDAS (ARRAY)</h5>
+                                    <div class="debug-quick-controls">
+                                        <input id="debugArrayValue" type="text" class="debug-quick-input" placeholder="valor" />
+                                        <input id="debugArrayIndex" type="number" class="debug-quick-input" placeholder="indice" />
+                                    </div>
+                                    <div class="debug-quick-actions">
+                                        <button id="btnDebugArrayInsert" class="header-btn primary">Insert</button>
+                                        <button id="btnDebugArrayAppend" class="header-btn">Append</button>
+                                        <button id="btnDebugArrayGet" class="header-btn">Get</button>
+                                        <button id="btnDebugArrayRemove" class="header-btn">Remove</button>
+                                    </div>
+                                </div>
+                                <div class="debug-block debug-array-secondary">
+                                    <h5>N&Oacute; ATUAL</h5>
+                                    <div id="debugCurrentNodeBody" class="debug-kv-body">-</div>
+                                </div>
+                                <div class="debug-block debug-professor-only debug-array-secondary">
+                                    <h5>VARI&Aacute;VEIS</h5>
+                                    <div id="debugVarsBody" class="debug-kv-body">-</div>
+                                </div>
+                                <div class="debug-block debug-array-secondary">
+                                    <h5>ESTRUTURA AUXILIAR</h5>
+                                    <div id="debugAuxBody" class="debug-kv-body">-</div>
+                                </div>
+                                <div class="debug-block debug-array-secondary">
+                                    <h5>RESULTADO</h5>
+                                    <div id="debugResultBody" class="debug-kv-body">[]</div>
+                                </div>
+                                <div class="debug-block debug-professor-only debug-array-secondary">
+                                    <h5>M&Eacute;TRICAS</h5>
+                                    <div id="debugMetricsText" class="debug-kv-body">Nodes visited: 0 | Queue/Stack ops: 0 | Comparisons: 0</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="debug-pane debug-pane-center">
+                            <h4>LIVE PREVIEW</h4>
+                            <div id="debugTreePreview" class="heap-tree-preview debug-tree-preview"></div>
+                        </section>
+
+                        <section class="debug-pane debug-pane-right">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <h4>C&Oacute;DIGO JAVA</h4>
+                                <button id="btnExpandDebugCode" class="header-btn icon-btn" title="Expandir C&oacute;digo" style="padding: 0 8px; font-size: 1.2rem; margin: 0;">&#9974;</button>
+                            </div>
+                            <div id="debugCodeView" class="code-display debug-code-view"></div>
+                            <div class="debug-block">
+                                <h5>EVENTO</h5>
+                                <div id="debugEventText" class="debug-kv-body">-</div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="debug-bottom-stack">
+                        <div class="debug-block">
+                            <h5>ALGORITHM TIMELINE</h5>
+                            <div id="debugTimelineTrack" class="debug-timeline-track"></div>
+                        </div>
+                        <div class="debug-block">
+                            <h5>WHY?</h5>
+                            <div id="debugWhyText" class="debug-why">Aguardando eventos...</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <aside class="right-sidebar">
+                <div class="right-panel-switcher">
+                    <label for="rightPanelSelect">Painel:</label>
+                    <select id="rightPanelSelect" class="speed-select" aria-label="Selecionar painel direito">
+                        <option value="code" selected>C&oacute;digo Java</option>
+                        <option value="locals">Vari&aacute;veis Locais</option>
+                        <option value="stack">Call Stack</option>
+                    </select>
+                </div>
+
+                <div class="side-card code-card right-panel-item" data-right-panel="code">
+                    <div class="card-header">
+                        <h3>C&Oacute;DIGO JAVA</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span id="codeFileName" class="code-filename">LinkedList.java &#9662;</span>
+                            <button id="btnExpandCode" class="header-btn icon-btn" title="Expandir C&oacute;digo" style="padding: 0 8px; font-size: 1.2rem;">&#9974;</button>
+                        </div>
+                    </div>
+                    <div id="codeDisplay" class="code-display"></div>
+                </div>
+
+                <div class="side-card right-panel-item hidden" data-right-panel="locals">
+                    <div class="side-card-label">VARI&Aacute;VEIS LOCAIS</div>
+                    <table class="local-vars-table"><tbody id="localVarsBody"></tbody></table>
+                </div>
+
+                <div class="side-card right-panel-item hidden" data-right-panel="stack">
+                    <div class="side-card-label">CALL STACK</div>
+                    <div id="callStackList" class="call-stack-list"></div>
+                </div>
+
+                <details class="aux-teaching-panel">
+                    <summary>Painel Did&aacute;tico (oculto por padr&atilde;o)</summary>
+
+                <div class="side-card">
+                    <div class="side-card-label">OPERA&Ccedil;&Atilde;O ATUAL</div>
+                    <div id="currentOperationTitle" class="operation-title">-</div>
+                    <div class="operation-meta"><span class="meta-key">PASSO:</span><span id="stepCounter" class="meta-val">0/0</span></div>
+                    <div class="operation-meta"><span class="meta-key">A&Ccedil;&Atilde;O:</span><span id="currentStepAction" class="meta-val action-val">Aguardando operacao...</span></div>
+                </div>
+
+                <div class="side-card">
+                    <div id="stateCardLabel" class="side-card-label">ESTADO DA LISTA</div>
+                    <div class="state-block">
+                        <div id="stateHeadKey" class="state-key">HEAD</div>
+                        <div id="stateHead" class="state-big-value">null</div>
+                    </div>
+                    <div class="state-block">
+                        <div id="stateTailKey" class="state-key">TAIL</div>
+                        <div id="stateTail" class="state-big-value">null</div>
+                    </div>
+                    <div class="state-block">
+                        <div class="state-key">SIZE</div>
+                        <div id="stateSize" class="state-big-value">0</div>
+                    </div>
+                </div>
+
+                <div class="side-card">
+                    <div id="focusCardLabel" class="side-card-label">NODE ATUAL</div>
+                    <div class="node-detail-row"><span id="focusKeyNode">Node:</span><span id="stateNodeId" class="node-detail-val">-</span></div>
+                    <div class="node-detail-row"><span id="focusKeyAddress">Address:</span><span id="stateNodeAddress" class="node-detail-val">-</span></div>
+                    <div class="node-detail-row"><span id="focusKeyValue">Value:</span><span id="stateNodeValue" class="node-detail-val">-</span></div>
+                    <div class="node-detail-row"><span id="focusKeyPrev">Previous:</span><span id="stateNodePrev" class="node-detail-val">-</span></div>
+                    <div class="node-detail-row"><span id="focusKeyNext">Next:</span><span id="stateNodeNext" class="node-detail-val">-</span></div>
+                </div>
+
+                <div class="side-card">
+                    <div class="side-card-label">COMPLEXIDADE</div>
+                    <div class="complexity-time-label">TEMPO</div>
+                    <div id="complexityValue" class="complexity-big-value">O(1)</div>
+                    <button id="complexityWhyBtn" class="complexity-why-btn">Por que <span id="complexityWhyValue">O(1)</span>?</button>
+                    <div id="complexityDesc" class="complexity-desc">Aguardando operacao...</div>
+                </div>
+
+                <div class="side-card">
+                    <div class="side-card-label">OPERA&Ccedil;&Otilde;ES</div>
+                    <div id="FenwickTreeControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <label class="toggle-label" for="fenwickAutoDemo">
+                                <input id="fenwickAutoDemo" type="checkbox" />
+                                <span>Auto-demo (cenarios iniciam em Play)</span>
+                            </label>
+                        </div>
+                        <div class="controls-group">
+                            <input id="fenwickInputValues" type="text" placeholder="valores: 2,1,3,4,5" />
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnFenwickBuild" class="action-btn primary">Build</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="fenwickUpdateIndex" type="number" min="0" placeholder="indice" />
+                                <input id="fenwickUpdateValue" type="number" placeholder="novo valor" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnFenwickUpdate" class="action-btn info">Update</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="fenwickPrefixIndex" type="number" min="0" placeholder="prefixo ate indice" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnFenwickPrefix" class="action-btn warning">PrefixSum</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="fenwickRangeLeft" type="number" min="0" placeholder="left" />
+                                <input id="fenwickRangeRight" type="number" min="0" placeholder="right" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnFenwickRange" class="action-btn warning">RangeSum</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnFenwickClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="UnionFindControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="ufSizeInput" type="number" min="2" placeholder="tamanho (ex: 8)" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnUfReset" class="action-btn danger">Reset UF</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="ufInputA" type="number" min="0" placeholder="no A" />
+                                <input id="ufInputB" type="number" min="0" placeholder="no B" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnUfUnion" class="action-btn primary">Union(A, B)</button>
+                                <button id="btnUfConnected" class="action-btn warning">Connected(A,B)</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="ufFindInput" type="number" min="0" placeholder="find(no)" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnUfFind" class="action-btn info">Find</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="GraphControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="graphSizeInput" type="number" min="3" placeholder="vertices (ex: 7)" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnGraphReset" class="action-btn danger">Reset Grafo</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="graphInputU" type="number" min="0" placeholder="u" />
+                                <input id="graphInputV" type="number" min="0" placeholder="v" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnGraphAddEdge" class="action-btn primary">AddEdge(u, v)</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="graphStartInput" type="number" min="0" placeholder="vertice inicial" />
+                                <input id="graphTargetInput" type="number" min="0" placeholder="vertice destino" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnGraphBfs" class="action-btn info">BFS</button>
+                                <button id="btnGraphDfs" class="action-btn warning">DFS</button>
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnGraphShortestPath" class="action-btn primary">Menor Caminho</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="LinkedListControls" class="module-controls">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputValue" type="text" placeholder="valor" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnAddFirst" class="action-btn primary">AddFirst</button>
+                                <button id="btnAddLast" class="action-btn info">AddLast</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnRemoveFirst" class="action-btn danger">RemoveFirst</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputRemoveValue" type="text" placeholder="valor para remover" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnRemoveValue" class="action-btn danger">RemoveValue</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputSearchValue" type="text" placeholder="valor para buscar" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnSearchValue" class="action-btn info">Buscar Valor</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputIndex" type="number" min="0" placeholder="&iacute;ndice" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnGet" class="action-btn warning">Get</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnClear" class="action-btn danger">Clear</button>
+                                <button id="btnReset" class="action-btn secondary">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div id="DoublyLinkedListControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputDoublyValue" type="text" placeholder="valor" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnDoublyAddFirst" class="action-btn primary">AddFirst</button>
+                                <button id="btnDoublyAddLast" class="action-btn info">AddLast</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnDoublyRemoveFirst" class="action-btn danger">RemoveFirst</button>
+                                <button id="btnDoublyRemoveLast" class="action-btn danger" title="Remoção em O(1) com tail.previous">RemoveLast O(1)</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputDoublyRemoveValue" type="text" placeholder="valor para remover" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnDoublyRemoveValue" class="action-btn danger">RemoveValue</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputDoublySearchValue" type="text" placeholder="valor para buscar" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnDoublySearchValue" class="action-btn info">Buscar Valor</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputDoublyIndex" type="number" min="0" placeholder="índice" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnDoublyGet" class="action-btn warning">Get</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnDoublyClear" class="action-btn danger">Clear</button>
+                                <button id="btnDoublyReset" class="action-btn secondary">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ArrayControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="arrayInputValue" type="text" placeholder="valor" />
+                                <input id="arrayInputIndex" type="number" min="0" placeholder="&iacute;ndice" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnArrayAdd" class="action-btn primary">Insert</button>
+                                <button id="btnArrayAddLast" class="action-btn info">Append</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <input id="arrayRemoveIndex" type="number" min="0" placeholder="remover &iacute;ndice" />
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnArrayRemove" class="action-btn danger">Remove</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <input id="arrayGetIndex" type="number" min="0" placeholder="buscar &iacute;ndice" />
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnArrayGet" class="action-btn warning">Get</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <input id="arraySearchValue" type="text" placeholder="buscar valor" />
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnArraySearchValue" class="action-btn info">Buscar Valor</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnArrayClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="StackControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="stackInputValue" type="text" placeholder="valor" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnStackPush" class="action-btn primary">Push</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnStackPop" class="action-btn danger">Pop</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnStackPeek" class="action-btn warning">Peek</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnStackClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="CircularQueueControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="queueInputValue" type="text" placeholder="valor" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnQueueEnqueue" class="action-btn primary">Enqueue</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnQueueDequeue" class="action-btn danger">Dequeue</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnQueuePeek" class="action-btn warning">Peek</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnQueueClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="DequeControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="dequeInputValue" type="text" placeholder="valor" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnDequePushFront" class="action-btn primary">PushFront</button>
+                                <button id="btnDequePushBack" class="action-btn info">PushBack</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnDequePopFront" class="action-btn danger">PopFront</button>
+                                <button id="btnDequePopBack" class="action-btn danger">PopBack</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnDequePeekFront" class="action-btn warning">PeekFront</button>
+                                <button id="btnDequePeekBack" class="action-btn warning">PeekBack</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnDequeClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="PriorityHeapControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="heapInputValue" type="text" placeholder="valor inteiro" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnHeapInsert" class="action-btn primary">Insert</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnHeapExtractMin" class="action-btn danger">ExtractMin</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnHeapPeek" class="action-btn warning">PeekMin</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnHeapClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="HashTableControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="hashInputKey" type="text" placeholder="chave" />
+                                <input id="hashInputValue" type="text" placeholder="valor" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnHashPut" class="action-btn primary">Put</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="hashInputKeyLookup" type="text" class="hidden" />
+                            </div>
+                            <div class="btn-row two-cols">
+                                <button id="btnHashGet" class="action-btn warning">Get</button>
+                                <button id="btnHashRemove" class="action-btn danger">Remove</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnHashClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="BSTControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="bstInputValue" type="text" placeholder="valor inteiro" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnBSTInsert" class="action-btn primary">Insert</button>
+                                <button id="btnBSTContains" class="action-btn warning">Contains</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnBSTBfs" class="action-btn info">BFS</button>
+                                <button id="btnBSTDfs" class="action-btn info">DFS</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnBSTRemove" class="action-btn danger">Remove</button>
+                                <button id="btnBSTClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="AVLControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="avlInputValue" type="text" placeholder="valor inteiro" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnAVLInsert" class="action-btn primary">Insert</button>
+                                <button id="btnAVLContains" class="action-btn warning">Contains</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnAVLRemove" class="action-btn danger">Remove</button>
+                                <button id="btnAVLClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="RedBlackControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="rbtInputValue" type="text" placeholder="valor inteiro" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnRBTInsert" class="action-btn primary">Insert</button>
+                                <button id="btnRBTContains" class="action-btn warning">Contains</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnRBTClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="TrieControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="trieInputWord" type="text" placeholder="palavra" />
+                            </div>
+                            <div class="btn-row two-cols mt-4">
+                                <button id="btnTrieInsert" class="action-btn primary">Insert</button>
+                                <button id="btnTrieContains" class="action-btn warning">Contains</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnTrieClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="SegmentTreeControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="segmentInputValues" type="text" placeholder="valores separados por virgula" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnSegmentBuild" class="action-btn primary">Build</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="segmentQueryLeft" type="number" min="0" placeholder="query esquerda" />
+                                <input id="segmentQueryRight" type="number" min="0" placeholder="query direita" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnSegmentQuery" class="action-btn warning">Query</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="segmentUpdateIndex" type="number" min="0" placeholder="indice" />
+                                <input id="segmentUpdateValue" type="number" placeholder="novo valor" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnSegmentUpdate" class="action-btn info">Update</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row one-col">
+                                <button id="btnSegmentClear" class="action-btn danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="KDTreeControls" class="module-controls hidden">
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputKdX" type="number" min="0" max="100" placeholder="coord X (0-100)" />
+                                <input id="inputKdY" type="number" min="0" max="100" placeholder="coord Y (0-100)" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnKdInsert" class="action-btn primary">Inserir Ponto (X, Y)</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputKdQx" type="number" min="0" max="100" placeholder="Qx (0-100)" />
+                                <input id="inputKdQy" type="number" min="0" max="100" placeholder="Qy (0-100)" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnKdNearest" class="action-btn info">Vizinho Mais Próximo (KNN)</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="input-group">
+                                <input id="inputKdXmin" type="number" min="0" max="100" placeholder="X min" />
+                                <input id="inputKdXmax" type="number" min="0" max="100" placeholder="X max" />
+                            </div>
+                            <div class="input-group mt-2">
+                                <input id="inputKdYmin" type="number" min="0" max="100" placeholder="Y min" />
+                                <input id="inputKdYmax" type="number" min="0" max="100" placeholder="Y max" />
+                            </div>
+                            <div class="btn-row one-col mt-4">
+                                <button id="btnKdRange" class="action-btn warning">Busca por Região (Range)</button>
+                            </div>
+                        </div>
+                        <div class="controls-group">
+                            <div class="btn-row two-cols">
+                                <button id="btnKdClear" class="action-btn danger">Limpar</button>
+                                <button id="btnKdReset" class="action-btn secondary">Resetar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                </details>
+            </aside>
+        </div>
+    </div>
+
+    <!-- ========== MOBILE BOTTOM BAR ========== -->
+    <div id="mobileBottomBar" class="mobile-bottom-bar">
+        <div class="mobile-playback-row">
+            <button id="mobileBtnPrevStep" class="mobile-ctrl-btn" aria-label="Passo anterior">&#9664;</button>
+            <button id="mobileBtnPlayPause" class="mobile-ctrl-btn primary" aria-label="Play/Pause">&#9654; Play</button>
+            <button id="mobileBtnNextStep" class="mobile-ctrl-btn" aria-label="Próximo passo">&#9193; Passo</button>
+            <select id="mobileSpeedSelect" class="mobile-speed-sel" aria-label="Velocidade">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+                <option value="3">3x</option>
+            </select>
+            <button id="mobileBtnOpenDrawer" class="mobile-ctrl-btn accent" aria-label="Abrir operações">&#43; Operar</button>
+        </div>
+        <div class="mobile-status-line">
+            <span id="mobileStepCounter">0/0</span>
+            <span id="mobileActionText">Aguardando operação...</span>
+        </div>
+    </div>
+
+    <!-- ========== MOBILE DRAWER ========== -->
+    <div id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+        <div class="mobile-drawer-handle-bar" id="mobileDrawerHandleBar"></div>
+        <div class="mobile-drawer-header">
+            <span class="mobile-drawer-title" id="mobileDrawerTitle">Operações</span>
+            <button class="mobile-drawer-close-btn" id="mobileDrawerCloseBtn" aria-label="Fechar">&#10005;</button>
+        </div>
+        <div class="mobile-drawer-content" id="mobileDrawerContent">
+            <!-- Conteúdo injetado via JS pelo MobileControls -->
+        </div>
+    </div>
+    <div id="mobileDrawerOverlay" class="mobile-drawer-overlay"></div>
+
+    <!-- Tutorial Overlay -->
+    <div id="tutorialOverlay" class="tutorial-overlay hidden"></div>
+    
+    <!-- Tutorial Modal (fora do overlay para controle de z-index independente) -->
+    <div id="tutorialModal" class="tutorial-modal hidden">
+        <div class="tutorial-content" id="tutorialContent">
+            <!-- Conteúdo injetado via JS -->
+        </div>
+        <div class="tutorial-footer">
+            <div class="tutorial-dots" id="tutorialDots"></div>
+            <div class="tutorial-actions">
+                <button id="btnPrevTutorial" class="action-btn secondary hidden">Anterior</button>
+                <button id="btnNextTutorial" class="action-btn primary">Próximo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theory Modal -->
+    <div id="theoryOverlay" class="tutorial-overlay hidden"></div>
+    <div id="theoryModal" class="tutorial-modal theory-modal hidden">
+        <div class="theory-modal-header">
+            <div class="theory-modal-title-wrap">
+                <span class="theory-modal-badge">Aprofundamento Teórico &amp; Hardware</span>
+                <h2 id="theoryModalTitle" class="theory-modal-title">📖 Teoria</h2>
+            </div>
+            <button id="btnCloseTheoryTop" class="theory-modal-close-btn" type="button" aria-label="Fechar modal de teoria">&times;</button>
+        </div>
+        <div class="theory-modal-body" id="theoryContent">
+            <!-- Conteúdo injetado via JS -->
+        </div>
+        <div class="theory-modal-footer">
+            <button id="btnTheoryScrollTop" class="theory-btn-secondary" type="button" title="Voltar ao início da leitura">
+                ↑ Topo
+            </button>
+            <a id="btnDownloadTheoryPdf" class="theory-btn-secondary" href="#" target="_blank" style="display: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; color: #38bdf8;" download>
+                ⬇ Baixar PDF
+            </a>
+            <button id="btnCloseTheory" class="action-btn primary theory-btn-primary" type="button">Entendi</button>
+        </div>
+    </div>
+
+    <!-- DATA STRUCTURES ENGINE CONTAINER -->
+    <div id="dataStructuresEngineContainer" class="hidden"></div>
+
+    <script src="src/model/Node.js?v=20260820-3"></script>
+    <script src="src/model/DoublyLinkedList.js?v=20260902-dll1"></script>
+    <script src="src/model/SequentialArray.js?v=20260820-3"></script>
+    <script src="src/model/ManualStack.js?v=20260820-3"></script>
+    <script src="src/model/CircularQueue.js?v=20260901-cq1"></script>
+    <script src="src/model/Deque.js?v=20260820-3"></script>
+    <script src="src/model/PriorityHeap.js?v=20260820-3"></script>
+    <script src="src/model/HashTable.js?v=20260915-3"></script>
+    <script src="src/model/BinarySearchTree.js?v=20260820-3"></script>
+    <script src="src/model/AVLTree.js?v=20260820-3"></script>
+    <script src="src/model/RedBlackTree.js?v=20260820-3"></script>
+    <script src="src/model/Trie.js?v=20260820-3"></script>
+    <script src="src/model/FenwickTree.js?v=20260820-3"></script>
+    <script src="src/model/UnionFind.js?v=20260820-3"></script>
+    <script src="src/model/GraphAdjacencyList.js?v=20260820-3"></script>
+    <script src="src/data/DemoScenarios.js?v=20260902-dll1"></script>
+    <script src="src/data/TheoryData.js?v=20260902-theory7"></script>
+    <script src="src/animation/Step.js?v=20260820-3"></script>
+    <script src="src/animation/AlgorithmEvent.js?v=20260820-3"></script>
+    <script src="src/animation/AlgorithmExecutionEngine.js?v=20260901-slow1"></script>
+    <script src="src/model/SegmentTree.js?v=20260820-3"></script>
+    <script src="src/model/KDTree.js?v=20260902-kd1"></script>
+    <script src="src/visualization/CodeHighlighter.js?v=20260820-3"></script>
+    <script src="src/visualization/NodeRenderer.js?v=20260820-3"></script>
+    <script src="src/visualization/PointerRenderer.js?v=20260902-dll1"></script>
+    <script src="src/visualization/ArrayRenderer.js?v=20260915-1"></script>
+    <script src="src/visualization/BSTRenderer.js?v=20260922-1"></script>
+    <script src="src/visualization/GraphRenderer.js?v=20260820-3"></script>
+    <script src="src/visualization/KDTreeRenderer.js?v=20260902-kd1"></script>
+    <!-- Firebase SDK (Realtime Database & Auth) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="src/core/firebaseConfig.js?v=20260826-5"></script>
+
+    <!-- UI Components -->
+    <script src="src/ui/ConsolePanel.js"></script>
+    <script src="src/ui/StatePanel.js"></script>
+    <script src="src/ui/ComplexityPanel.js"></script>
+    <script src="src/ui/SyncPanel.js"></script>
+    <script src="src/ui/CallStackPanel.js?v=20260820-3"></script>
+    <script src="src/ui/LocalVariablesPanel.js?v=20260820-3"></script>
+    <script src="src/ui/TimelinePanel.js?v=20260820-3"></script>
+    <script src="src/ui/AlgorithmDebugPanel_v2.js?v=20260915-2"></script>
+    <script src="src/ui/LinkedListOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/DoublyLinkedListOperationPanel.js?v=20260902-dll1"></script>
+    <script src="src/ui/ArrayOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/StackOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/CircularQueueOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/DequeOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/PriorityHeapOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/HashTableOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/BSTOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/AVLOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/RedBlackOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/TrieOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/SegmentTreeOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/KDTreeOperationPanel.js?v=20260902-kd1"></script>
+    <script src="src/ui/FenwickOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/UnionFindOperationPanel.js?v=20260820-3"></script>
+    <script src="src/ui/GraphOperationPanel.js?v=20260820-3"></script>
+    <script src="src/animation/StepExecutor.js?v=20260820-3"></script>
+    <script src="src/animation/ArrayStepExecutor.js?v=20260915-6"></script>
+    <script src="src/animation/GraphStepExecutor.js?v=20260820-3"></script>
+    <script src="src/animation/BSTStepExecutor.js?v=20260820-3"></script>
+    <script src="src/animation/KDTreeStepExecutor.js?v=20260902-kd1"></script>
+    <script src="src/animation/AnimationController.js?v=20260902-syncfix"></script>
+    <script src="src/modules/BaseModule.js?v=20260820-3"></script>
+    <script src="src/modules/LinkedListModule.js?v=20260820-3"></script>
+    <script src="src/modules/DoublyLinkedListModule.js?v=20260902-dll1"></script>
+    <script src="src/modules/ArrayModule.js?v=20260820-3"></script>
+    <script src="src/modules/StackModule.js?v=20260820-3"></script>
+    <script src="src/modules/CircularQueueModule.js?v=20260820-3"></script>
+    <script src="src/modules/DequeModule.js?v=20260820-3"></script>
+    <script src="src/modules/PriorityHeapModule.js?v=20260820-3"></script>
+    <script src="src/modules/HashTableModule.js?v=20260820-3"></script>
+    <script src="src/modules/BSTModule.js?v=20260820-3"></script>
+    <script src="src/modules/AVLModule.js?v=20260820-3"></script>
+    <script src="src/modules/RedBlackModule.js?v=20260820-3"></script>
+    <script src="src/modules/TrieModule.js?v=20260820-3"></script>
+    <script src="src/modules/SegmentTreeModule.js?v=20260820-3"></script>
+    <script src="src/modules/FenwickModule.js?v=20260820-3"></script>
+    <script src="src/modules/UnionFindModule.js?v=20260820-3"></script>
+    <script src="src/modules/GraphModule.js?v=20260820-3"></script>
+    <script src="src/modules/KDTreeModule.js?v=20260902-kd1"></script>
+    <script src="src/ui/TutorialManager.js?v=20260821"></script>
+    <script src="src/core/SyncManager.js?v=20260903-syncfix3"></script>
+    <script src="src/ui/MobileControls.js?v=20260827-1"></script>
+    <script src="src/core/AppManager.js?v=20260904-2"></script>
+    <!-- DATA STRUCTURES ENGINE MODULES -->
+    <script src="src/engine/core/HardwareMetrics.js?v=20260902-engine1"></script>
+    <script src="src/engine/core/EngineState.js?v=20260902-engine1"></script>
+    <script src="src/engine/animation/HardwareTimeline.js?v=20260902-engine1"></script>
+    <script src="src/engine/animation/BusAnimator.js?v=20260902-engine1"></script>
+    <script src="src/engine/simulators/CacheSimulator.js?v=20260902-engine1"></script>
+    <script src="src/engine/simulators/MemoryVisualizer.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/EngineBaseLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/HardwareHierarchyLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/LocalityComparatorLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/MemoryOverheadLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/MemoryAnomaliesLab.js?v=20260903-anom"></script>
+    <script src="src/engine/labs/DynamicArrayLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/StackCallStackLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/CircularQueueLab.js?v=20260903-2"></script>
+    <script src="src/engine/labs/LinkedListLab.js?v=20260903-2"></script>
+    <script src="src/engine/labs/DoublyLinkedListLab.js?v=20260903-3"></script>
+    <script src="src/engine/labs/HashTableLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/BSTLab.js?v=20260902-engine1"></script>
+    <script src="src/engine/labs/RedBlackTreeLab.js?v=20260903-5"></script>
+    <script src="src/engine/labs/TrieLab.js?v=20260903-5"></script>
+    <script src="src/engine/labs/SegmentTreeLab.js?v=20260903-4"></script>
+    <script src="src/engine/labs/HeapLab.js?v=20260903-2"></script>
+    <script src="src/engine/labs/FenwickTreeLab.js?v=20260903-4"></script>
+    <script src="src/engine/labs/UnionFindLab.js?v=20260903-4"></script>
+    <script src="src/engine/labs/GraphLab.js?v=20260903-3"></script>
+    <script src="src/engine/decision/DecisionGraphData.js?v=20260902-engine1"></script>
+    <script src="src/engine/decision/DecisionTreeEngine.js?v=20260902-engine1"></script>
+    <script src="src/engine/ui/EngineControlsBar.js?v=20260902-engine1"></script>
+    <script src="src/engine/ui/CodeSyncPanel.js?v=20260902-engine1"></script>
+    <script src="src/engine/ui/EngineeringHud.js?v=20260902-engine1"></script>
+    <script src="src/engine/EngineApp.js?v=20260904-1"></script>
+
+    <script src="src/app.js?v=20260820-3"></script>
+</body>
+</html>
