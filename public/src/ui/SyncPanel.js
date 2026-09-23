@@ -57,7 +57,7 @@ class SyncPanel {
                 if (loginBtn) {
                     loginBtn.textContent = 'Professor Logado';
                     loginBtn.classList.remove('secondary');
-                    loginBtn.classList.add('success');
+                    loginBtn.classList.add('info');
                 }
             } else {
                 sessionStorage.removeItem('professorAuth');
@@ -65,7 +65,7 @@ class SyncPanel {
                 if (loginBtn) {
                     loginBtn.textContent = 'Login Professor';
                     loginBtn.classList.add('secondary');
-                    loginBtn.classList.remove('success');
+                    loginBtn.classList.remove('info');
                 }
             }
         });
